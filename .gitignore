@@ -1,6 +1,1 @@
-.cache
-CMakeFiles
-CMakeCache.txt
-cmake_install.cmake
-ctjs
-compile_commands.json
+build
