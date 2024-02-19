@@ -19,9 +19,9 @@ void VariableDeclarator::to_string(int indent) {
   std::cout << "\n" << std::string(indent, ' ') << ")";
 }
 
-auto VariableDeclarator::evaluate(Environment& environment) -> Value {
+auto VariableDeclarator::evaluate(std::shared_ptr<Environment> environment) -> Value {
   auto value{init_->evaluate(environment)};
-  environment.set(id_->name(), init_->evaluate(environment));
+  environment->set(id_->name(), init_->evaluate(environment));
   return value;
 }
 }  // namespace ctjs::ast

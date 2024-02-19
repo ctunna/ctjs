@@ -38,7 +38,7 @@ class BinaryExpression : public Expression {
                    std::shared_ptr<Expression> right);
 
   void to_string(int indent = 0) override;
-  auto evaluate(Environment& environment) -> Value override;
+  auto evaluate(std::shared_ptr<Environment> environment) -> Value override;
 
  private:
   std::string file_name_;
@@ -47,5 +47,4 @@ class BinaryExpression : public Expression {
   std::shared_ptr<Expression> left_;
   std::shared_ptr<Expression> right_;
 };
-
 }  // namespace ctjs::ast

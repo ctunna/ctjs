@@ -2,15 +2,23 @@
 
 #include <string>
 
+#include "function.h"
+
 namespace ctjs {
 class Value {
  public:
   Value() = default;
   Value(int value);
   Value(bool value);
+  Value(Function value);
+  Value(std::string value);
 
   auto operator+(const Value& other) const -> Value;
+  auto operator-(const Value& other) const -> Value;
+  auto operator*(const Value& other) const -> Value;
   auto operator>(const Value& other) const -> bool;
+  auto operator<(const Value& other) const -> bool;
+  auto operator==(const Value& other) const -> bool;
 
   auto to_string() const -> std::string;
 
@@ -36,6 +44,14 @@ class Value {
           break;
       }
       return bool_value_;
+    } else if constexpr (std::is_same_v<T, Function>) {
+      if (type_ == Type::kFunction) {
+        return function_value_;
+      }
+      throw std::runtime_error{"Value is not a function"};
+    } else {
+      static_assert(std::is_same_v<T, int> || std::is_same_v<T, bool> ||
+                    std::is_same_v<T, Function>);
     }
   }
 
@@ -53,9 +69,10 @@ class Value {
     kNull
   };
 
-  [[maybe_unused]] bool defined_{};
-  [[maybe_unused]] Type type_{Type::kUndefined};
+  Type type_{Type::kUndefined};
   int int_value_{};
   bool bool_value_{};
+  Function function_value_{};
+  std::string string_value_{};
 };
 }  // namespace ctjs

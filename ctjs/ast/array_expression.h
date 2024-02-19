@@ -1,16 +1,17 @@
 #pragma once
 
 #include <memory>
+#include <string>
 #include <vector>
 
+#include "expression.h"
 #include "source_location.h"
-#include "statement.h"
 
 namespace ctjs::ast {
-class BlockStatement : public Statement {
+class ArrayExpression : public Expression {
  public:
-  BlockStatement(std::string file_name, SourceLocation loc,
-                 std::vector<std::shared_ptr<Statement>> body);
+  ArrayExpression(std::string file_name, SourceLocation loc,
+                  std::vector<std::shared_ptr<Expression>> elements);
 
   void to_string(int indent = 0) override;
   auto evaluate(std::shared_ptr<Environment> environment) -> Value override;
@@ -18,6 +19,6 @@ class BlockStatement : public Statement {
  private:
   std::string file_name_;
   SourceLocation loc_;
-  std::vector<std::shared_ptr<Statement>> body_;
+  std::vector<std::shared_ptr<Expression>> elements_;
 };
 }  // namespace ctjs::ast

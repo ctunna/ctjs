@@ -3,5 +3,7 @@
 #include "node.h"
 
 namespace ctjs::ast {
-class Statement : public Node {};
+class Statement : public Node {
+
+};
 }  // namespace ctjs::ast

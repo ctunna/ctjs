@@ -1,19 +1,25 @@
 #pragma once
 
+#include <memory>
+
 #include "expression.h"
 #include "source_location.h"
+#include "statement.h"
+
 namespace ctjs::ast {
-class Identifier : public Expression {
+
+class ReturnStatement : public Statement {
  public:
-  Identifier(std::string file_name, SourceLocation loc, std::string name);
+  ReturnStatement(std::string file_name, SourceLocation loc,
+                  std::shared_ptr<Expression> argument);
 
   void to_string(int indent = 0) override;
   auto evaluate(std::shared_ptr<Environment> environment) -> Value override;
-  auto name() const -> std::string;
 
  private:
   std::string file_name_;
   SourceLocation loc_;
-  std::string const name_;
+  std::shared_ptr<Expression> argument_;
 };
+
 }  // namespace ctjs::ast

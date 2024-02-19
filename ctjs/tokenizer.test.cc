@@ -4,6 +4,9 @@
 #include <vector>
 
 #include "catch2/catch_test_macros.hpp"
+
+using ctjs::ast::TokenType;
+
 namespace ctjs {
 auto var() -> Token { return {TokenType::Var, "var", 0, 0}; }
 

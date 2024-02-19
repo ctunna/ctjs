@@ -69,14 +69,23 @@ void BinaryExpression::to_string(int indent) {
   std::cout << "\n" << std::string(indent, ' ') << ")";
 }
 
-auto BinaryExpression::evaluate(Environment& environment) -> Value {
+auto BinaryExpression::evaluate(std::shared_ptr<Environment> environment)
+    -> Value {
   auto left{left_->evaluate(environment)};
   auto right{right_->evaluate(environment)};
   switch (op_) {
     case BinaryOperator::Add:
       return left + right;
+    case BinaryOperator::Sub:
+      return left - right;
+    case BinaryOperator::Mul:
+      return left * right;
+    case BinaryOperator::Equal:
+      return left == right;
     case BinaryOperator::GreaterThan:
       return left > right;
+    case BinaryOperator::LessThan:
+      return left < right;
     default:
       throw std::runtime_error("Unknown BinaryOperator");
   }

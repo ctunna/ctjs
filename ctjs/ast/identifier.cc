@@ -11,8 +11,8 @@ void Identifier::to_string(int indent) {
   std::cout << std::string(indent, ' ') << "Identifier(" << name_ << ")";
 }
 
-auto Identifier::evaluate(Environment& environment) -> Value {
-  return environment.get(name_);
+auto Identifier::evaluate(std::shared_ptr<Environment> environment) -> Value {
+  return environment->get(name_);
 }
 
 auto Identifier::name() const -> std::string { return name_; }

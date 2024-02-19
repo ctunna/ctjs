@@ -11,11 +11,12 @@ void Program::to_string(int indent) {
   std::cout << std::string(indent, ' ') << "Program([\n";
   for (auto &stmt : body_) {
     stmt->to_string(indent + 2);
+    std::cout << "\n";
   }
-  std::cout << "])\n";
+  std::cout << "])";
 }
 
-auto Program::evaluate(Environment &environment) -> Value {
+auto Program::evaluate(std::shared_ptr<Environment> environment) -> Value {
   for (auto &stmt : body_) {
     stmt->evaluate(environment);
   }

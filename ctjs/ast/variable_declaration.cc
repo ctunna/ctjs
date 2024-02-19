@@ -15,10 +15,11 @@ void VariableDeclaration::to_string(int indent) {
     decl->to_string(indent + 2);
     std::cout << "\n";
   }
-  std::cout << std::string(indent, ' ') << "])\n";
+  std::cout << std::string(indent, ' ') << "])";
 }
 
-auto VariableDeclaration::evaluate(Environment &environment) -> Value {
+auto VariableDeclaration::evaluate(std::shared_ptr<Environment> environment)
+    -> Value {
   for (auto &decl : declarations_) {
     decl->evaluate(environment);
   }

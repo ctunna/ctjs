@@ -4,5 +4,4 @@
 
 namespace ctjs::ast {
 class Directive : public ExpressionStatement {};
-
 }  // namespace ctjs::ast

@@ -18,14 +18,16 @@ void IfStatement::to_string(int indent) {
   test_->to_string(indent + 2);
   std::cout << "\n";
   consequent_->to_string(indent + 2);
+  std::cout << "\n";
   if (alternate_) {
     alternate_->to_string(indent + 2);
   } else {
-    std::cout << std::string(indent + 2, ' ') << "null\n)";
+    std::cout << std::string(indent + 2, ' ') << "null";
   }
+  std::cout << "\n" << std::string(indent, ' ') << ")";
 }
 
-auto IfStatement::evaluate(Environment& environment) -> Value {
+auto IfStatement::evaluate(std::shared_ptr<Environment> environment) -> Value {
   if (test_->evaluate(environment).coerce<bool>()) {
     return consequent_->evaluate(environment);
   } else if (alternate_) {

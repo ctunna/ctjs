@@ -1,5 +1,9 @@
 #include "tokenizer.h"
 
+#include <regex>
+
+using ctjs::ast::TokenType;
+
 namespace ctjs {
 static std::unordered_map<std::string, TokenType> const three_char_tokens{
     {"===", TokenType::EqualsEqualsEquals},
@@ -29,7 +33,9 @@ static std::unordered_map<std::string, TokenType> const keyword_tokens{
 
 Tokenizer::Tokenizer(const std::string_view source) : source_(source) {}
 
-auto Tokenizer::ready() -> bool { return position_ < source_.size(); }
+auto Tokenizer::ready() -> bool {
+  return position_ < source_.size() && peek().type != TokenType::Eof;
+}
 
 auto Tokenizer::consume_all() -> std::vector<Token> {
   std::vector<Token> tokens;
@@ -51,26 +57,41 @@ auto Tokenizer::next() -> Token {
     position_++;
   }
 
+  for (const auto &[token, token_type] : keyword_tokens) {
+    std::regex re{token + "[^\\w]"};
+    std::string str{source_.substr(position_, token.size() + 1)};
+    if (std::regex_match(str, re) ||
+        (str == token && position_ + token.size() == source_.size())) {
+      position_ += token.size();
+      return {token_type, token, 0, 0};
+    }
+  }
+
   std::vector<std::unordered_map<std::string, TokenType>> maps{
-      keyword_tokens, three_char_tokens, two_char_tokens, one_char_tokens};
+      three_char_tokens, two_char_tokens, one_char_tokens};
 
   for (const auto &map : maps) {
-    for (const auto &[str, token_type] : map) {
-      if (source_.substr(position_, str.size()) == str) {
-        position_ += str.size();
-        return {token_type, str, 0, 0};
+    for (const auto &[token, token_type] : map) {
+      if (source_.substr(position_, token.size()) == token) {
+        position_ += token.size();
+        return {token_type, token, 0, 0};
       }
     }
   }
 
   if (is_digit()) {
-    auto number = consume_numeric_literal();
+    auto number{consume_numeric_literal()};
     return {TokenType::NumericLiteral, number, 0, 0};
   }
 
   if (is_identifier_char()) {
-    auto identifier = consume_identifier();
+    auto identifier{consume_identifier()};
     return {TokenType::Identifier, identifier, 0, 0};
+  }
+
+  if (is_char('"')) {
+    auto str{consume_string_literal()};
+    return {TokenType::StringLiteral, str, 0, 0};
   }
 
   if (position_ >= source_.size()) {
@@ -78,6 +99,17 @@ auto Tokenizer::next() -> Token {
   }
 
   throw std::runtime_error("Unknown token");
+}
+
+auto Tokenizer::consume_string_literal() -> std::string {
+  std::string str;
+  position_++;
+  while (!is_char('"')) {
+    str += source_[position_];
+    position_++;
+  }
+  position_++;
+  return str;
 }
 
 auto Tokenizer::consume_numeric_literal() -> std::string {

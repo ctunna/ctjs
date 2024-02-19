@@ -13,7 +13,7 @@ class VariableDeclarator : public Node {
                      std::shared_ptr<Expression> init);
 
   void to_string(int indent = 0) override;
-  auto evaluate(Environment& environment) -> Value override;
+  auto evaluate(std::shared_ptr<Environment> environment) -> Value override;
 
  private:
   std::string file_name_;

@@ -14,6 +14,6 @@ class Environment {
   void to_string();
 
  private:
-  std::unordered_map<std::string, Value> variables_;
+  std::unordered_map<std::string, Value> scope_;
 };
 }  // namespace ctjs

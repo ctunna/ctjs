@@ -2,7 +2,12 @@
 
 #include <iostream>
 
+#include "ast/assignment_expression.h"
+#include "ast/binary_expression.h"
+#include "ast/call_expression.h"
+
 using ctjs::ast::BinaryOperator;
+using ctjs::ast::TokenType;
 
 namespace ctjs {
 
@@ -65,67 +70,102 @@ auto Parser::parse_statement() -> std::shared_ptr<ast::Statement> {
       return parse_variable_declaration();
     case TokenType::If:
       return parse_if_statement();
+    case TokenType::CurlyOpen:
+      return parse_block_statement();
+    case TokenType::While:
+      return parse_while_statement();
+    case TokenType::Function:
+      return parse_function_declaration();
+    case TokenType::Return:
+      return parse_return_statement();
     default:
-      throw std::runtime_error("Unknown statement");
+      return parse_expression_statement();
   }
 }
 
-auto Parser::parse_block_statement() -> std::shared_ptr<ast::BlockStatement> {
-  auto token{tokenizer_.next()};
-  if (token.type != TokenType::CurlyOpen) {
-    throw std::runtime_error("Expected {");
+auto Parser::parse_return_statement() -> std::shared_ptr<ast::ReturnStatement> {
+  consume_token(TokenType::Return);
+  if (expect_token(TokenType::Semicolon)) {
+    consume_token(TokenType::Semicolon);
+    return std::make_shared<ast::ReturnStatement>(file_name_, location_,
+                                                  nullptr);
   }
+  auto expression{parse_expression()};
+  consume_token(TokenType::Semicolon);
+  return std::make_shared<ast::ReturnStatement>(file_name_, location_,
+                                                expression);
+}
+
+auto Parser::parse_function_declaration()
+    -> std::shared_ptr<ast::FunctionDeclaration> {
+  consume_token(TokenType::Function);
+  auto identifier{parse_identifier()};
+  consume_token(TokenType::ParenOpen);
+  std::vector<std::shared_ptr<ast::Identifier>> params;
+  while (!expect_token(TokenType::ParenClose)) {
+    params.push_back(parse_identifier());
+    if (expect_token(TokenType::Comma)) {
+      consume_token(TokenType::Comma);
+    }
+  }
+  consume_token(TokenType::ParenClose);
+  auto body{parse_block_statement()};
+  return std::make_shared<ast::FunctionDeclaration>(file_name_, location_,
+                                                    identifier, params, body);
+}
+
+auto Parser::parse_expression_statement()
+    -> std::shared_ptr<ast::ExpressionStatement> {
+  auto expression{parse_expression()};
+  consume_token(TokenType::Semicolon);
+  return std::make_shared<ast::ExpressionStatement>(file_name_, location_,
+                                                    expression);
+}
+
+auto Parser::parse_while_statement() -> std::shared_ptr<ast::WhileStatement> {
+  consume_token(TokenType::While);
+  consume_token(TokenType::ParenOpen);
+  auto test{parse_expression()};
+  consume_token(TokenType::ParenClose);
+  auto body{parse_statement()};
+  return std::make_shared<ast::WhileStatement>(file_name_, location_, test,
+                                               body);
+}
+
+auto Parser::parse_block_statement() -> std::shared_ptr<ast::BlockStatement> {
+  consume_token(TokenType::CurlyOpen);
   std::vector<std::shared_ptr<ast::Statement>> statements;
-  while (tokenizer_.peek().type != TokenType::CurlyClose) {
+  while (!expect_token(TokenType::CurlyClose)) {
     statements.push_back(parse_statement());
   }
-  if (tokenizer_.next().type != TokenType::CurlyClose) {
-    throw std::runtime_error("Expected }");
-  }
+  consume_token(TokenType::CurlyClose);
   return std::make_shared<ast::BlockStatement>(file_name_, location_,
                                                statements);
 }
 
 auto Parser::parse_if_statement() -> std::shared_ptr<ast::IfStatement> {
-  auto token{tokenizer_.next()};
-  if (token.type != TokenType::If) {
-    throw std::runtime_error("Expected if");
-  }
-  if (tokenizer_.next().type != TokenType::ParenOpen) {
-    throw std::runtime_error("Expected (");
-  }
+  consume_token(TokenType::If);
+  consume_token(TokenType::ParenOpen);
   auto test{parse_expression()};
-  std::cout << tokenizer_.peek().value << std::endl;
-  if (tokenizer_.next().type != TokenType::ParenClose) {
-    throw std::runtime_error("Expected )");
-  }
-  auto consequent{tokenizer_.peek().type == TokenType::CurlyOpen
-                      ? parse_block_statement()
-                      : parse_statement()};
-  if (tokenizer_.peek().type != TokenType::Else) {
+  consume_token(TokenType::ParenClose);
+  auto consequent{parse_statement()};
+  if (!expect_token(TokenType::Else)) {
     return std::make_shared<ast::IfStatement>(file_name_, location_, test,
                                               consequent, nullptr);
   }
-  tokenizer_.next();
-  auto alternate{tokenizer_.peek().type == TokenType::CurlyOpen
-                     ? parse_block_statement()
-                     : parse_statement()};
+  consume_token(TokenType::Else);
+  auto alternate{parse_statement()};
   return std::make_shared<ast::IfStatement>(file_name_, location_, test,
                                             consequent, alternate);
 }
 
 auto Parser::parse_variable_declaration()
     -> std::shared_ptr<ast::VariableDeclaration> {
-  auto token{tokenizer_.next()};
-  if (token.type != TokenType::Var) {
-    throw std::runtime_error("Expected var");
-  }
+  consume_token(TokenType::Var);
   auto identifier{parse_identifier()};
-  if (tokenizer_.next().type != TokenType::Equals) {
-    throw std::runtime_error("Expected =");
-  }
+  consume_token(TokenType::Equals);
   auto expression{parse_expression()};
-  consume_semicolon();
+  consume_token(TokenType::Semicolon);
   auto declarator{std::make_shared<ast::VariableDeclarator>(
       file_name_, location_, identifier, expression)};
   std::vector<std::shared_ptr<ast::VariableDeclarator>> declarators{declarator};
@@ -135,45 +175,76 @@ auto Parser::parse_variable_declaration()
 
 auto Parser::optional_parse_identifier()
     -> std::optional<std::shared_ptr<ast::Identifier>> {
-  auto token{tokenizer_.peek()};
-  if (token.type != TokenType::Identifier) {
+  if (!expect_token(TokenType::Identifier)) {
     return {};
   }
   return parse_identifier();
 }
 
 auto Parser::parse_identifier() -> std::shared_ptr<ast::Identifier> {
-  auto token{tokenizer_.next()};
-  if (token.type != TokenType::Identifier) {
-    throw std::runtime_error("Expected identifier");
-  }
+  auto token{consume_token(TokenType::Identifier)};
   return std::make_shared<ast::Identifier>(file_name_, location_, token.value);
 }
 
 auto Parser::optional_parse_numeric_literal()
     -> std::optional<std::shared_ptr<ast::Literal>> {
   auto token{tokenizer_.peek()};
-  if (token.type != TokenType::NumericLiteral) {
+  if (!expect_token(TokenType::NumericLiteral)) {
     return {};
   }
   return parse_numeric_literal();
 }
 
 auto Parser::parse_numeric_literal() -> std::shared_ptr<ast::Literal> {
-  auto token{tokenizer_.next()};
-  if (token.type != TokenType::NumericLiteral) {
-    throw std::runtime_error("Expected numeric literal");
-  }
+  auto token{consume_token(TokenType::NumericLiteral)};
   return std::make_shared<ast::Literal>(file_name_, location_,
                                         std::stoi(token.value));
+}
+
+auto Parser::optional_parse_string_literal()
+    -> std::optional<std::shared_ptr<ast::Literal>> {
+  auto token{tokenizer_.peek()};
+  if (!expect_token(TokenType::StringLiteral)) {
+    return {};
+  }
+  return parse_string_literal();
+}
+
+auto Parser::parse_string_literal() -> std::shared_ptr<ast::Literal> {
+  auto token{consume_token(TokenType::StringLiteral)};
+  return std::make_shared<ast::Literal>(file_name_, location_, token.value);
 }
 
 auto Parser::parse_expression() -> std::shared_ptr<ast::Expression> {
   std::optional<std::shared_ptr<ast::Expression>> optional_expr{
       optional_parse_identifier()};
 
+  if (optional_expr && expect_token(TokenType::Equals)) {
+    consume_token(TokenType::Equals);
+    return std::make_shared<ast::AssignmentExpression>(
+        file_name_, location_, *optional_expr, parse_expression());
+  }
+
+  if (optional_expr && expect_token(TokenType::ParenOpen)) {
+    consume_token(TokenType::ParenOpen);
+    std::vector<std::shared_ptr<ast::Expression>> args;
+    while (!expect_token(TokenType::ParenClose)) {
+      args.push_back(parse_expression());
+      if (expect_token(TokenType::Comma)) {
+        consume_token(TokenType::Comma);
+      }
+    }
+    consume_token(TokenType::ParenClose);
+    optional_expr = std::make_shared<ast::CallExpression>(file_name_, location_,
+                                                          *optional_expr, args);
+  }
+
   if (!optional_expr) {
     optional_expr = optional_parse_numeric_literal();
+  }
+
+  if (!optional_expr) {
+    optional_expr = optional_parse_string_literal();
   }
 
   auto expr{*optional_expr};
@@ -187,10 +258,19 @@ auto Parser::parse_expression() -> std::shared_ptr<ast::Expression> {
   return expr;
 }
 
-void Parser::consume_semicolon() {
-  if (tokenizer_.next().type != TokenType::Semicolon) {
-    throw std::runtime_error("Expected ;");
+auto Parser::consume_token(TokenType type) -> Token {
+  auto token{tokenizer_.next()};
+  if (token.type != type) {
+    throw std::runtime_error("Expected token of type " + to_string(type));
   }
+  return token;
 }
 
+auto Parser::expect_token(TokenType type) -> std::optional<Token> {
+  auto token{tokenizer_.peek()};
+  if (token.type != type) {
+    return {};
+  }
+  return token;
+}
 }  // namespace ctjs

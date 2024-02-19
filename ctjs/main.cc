@@ -18,10 +18,12 @@ int main(int argc, char** argv) {
   ctjs::Parser p{code};
   auto program{p.parse()};
   program->to_string(0);
-  
-  ctjs::Environment env;
+
+  std::cout << std::endl;
+
+  auto env{std::make_shared<ctjs::Environment>()};
   program->evaluate(env);
-  env.to_string();
+  env->to_string();
 
   return 0;
 }

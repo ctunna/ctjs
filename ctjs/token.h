@@ -6,9 +6,12 @@
 
 #include "token_type.h"
 
+namespace ctjs {
+
 class Token {
  public:
-  Token(TokenType type, std::string_view value, size_t line_no, size_t column)
+  Token(ast::TokenType type, std::string_view value, size_t line_no,
+        size_t column)
       : type(type), value(value), line_no(line_no), column(column) {}
 
   auto operator==(const Token &other) const -> bool {
@@ -22,8 +25,9 @@ class Token {
     return os;
   }
 
-  TokenType type;
+  ast::TokenType type;
   std::string value;
   size_t line_no;
   size_t column;
 };
+}  // namespace ctjs

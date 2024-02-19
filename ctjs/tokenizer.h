@@ -28,6 +28,8 @@ class Tokenizer {
   auto next() -> Token;
 
  private:
+  auto consume_string_literal() -> std::string;
+
   auto consume_numeric_literal() -> std::string;
 
   auto consume_identifier() -> std::string;
