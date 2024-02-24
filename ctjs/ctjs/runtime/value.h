@@ -1,6 +1,7 @@
 #pragma once
 
 #include <string>
+#include <variant>
 
 #include "ctjs/runtime/function.h"
 
@@ -20,59 +21,15 @@ class Value {
   auto operator<(const Value& other) const -> bool;
   auto operator==(const Value& other) const -> bool;
 
-  auto to_string() const -> std::string;
-
   template <typename T>
   auto coerce() const -> T {
-    if constexpr (std::is_same_v<T, int>) {
-      switch (type_) {
-        case Type::kInt:
-          return int_value_;
-        case Type::kBoolean:
-          return bool_value_ ? 1 : 0;
-        default:
-          return 0;
-      }
-      return int_value_;
-    } else if constexpr (std::is_same_v<T, bool>) {
-      switch (type_) {
-        case Type::kInt:
-          return int_value_ != 0;
-        case Type::kBoolean:
-          return bool_value_;
-        default:
-          break;
-      }
-      return bool_value_;
-    } else if constexpr (std::is_same_v<T, Function>) {
-      if (type_ == Type::kFunction) {
-        return function_value_;
-      }
-      throw std::runtime_error{"Value is not a function"};
-    } else {
-      static_assert(std::is_same_v<T, int> || std::is_same_v<T, bool> ||
-                    std::is_same_v<T, Function>);
-    }
+    // TOOD: Coerce type, don't get
+    return std::get<T>(value_);
   }
 
- private:
-  enum class Type {
-    kUndefined,
-    kInt,
-    kFloat,
-    kString,
-    kObject,
-    kArray,
-    kFunction,
-    kNativeFunction,
-    kBoolean,
-    kNull
-  };
+  auto to_string() const -> std::string;
 
-  Type type_{Type::kUndefined};
-  int int_value_{};
-  bool bool_value_{};
-  Function function_value_{};
-  std::string string_value_{};
+ private:
+  std::variant<int, bool, Function, std::string> value_;
 };
 }  // namespace ctjs
