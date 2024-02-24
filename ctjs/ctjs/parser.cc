@@ -65,8 +65,6 @@ auto Parser::parse() -> std::shared_ptr<ast::Program> {
 }
 
 auto Parser::parse_statement() -> ast::StatementPtr {
-  // ast::Statement statement{parse_block_statement()};
-  // return statement;
   auto token{tokenizer_.peek()};
   switch (token.type) {
     case TokenType::Var:
