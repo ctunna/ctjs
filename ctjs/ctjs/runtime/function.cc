@@ -1,9 +1,8 @@
 #include "ctjs/runtime/function.h"
 
-#include "ctjs/ast/function_declaration.h"
-#include "ctjs/ast/interpreter_visitor.h"
 #include "ctjs/runtime/environment.h"
 #include "ctjs/runtime/value.h"
+#include "ctjs/visitor/interpreter_visitor.h"
 
 namespace ctjs {
 Function::Function(std::weak_ptr<ast::FunctionDeclaration> declaration,
@@ -19,8 +18,7 @@ Value Function::call(std::vector<Value> args) {
         auto id{std::get<std::shared_ptr<ast::Identifier>>(params[i])};
         copy->set(id->name, i < args.size() ? args[i] : Value());
       }
-      return std::visit(ast::InterpreterVisitor{}, decl->body,
-                        EnvironmentPtr{copy});
+      return std::visit(InterpreterVisitor{}, decl->body, EnvironmentPtr{copy});
     }
     throw std::runtime_error("Function closure has been deleted");
   }

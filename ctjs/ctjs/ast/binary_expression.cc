@@ -1,7 +1,5 @@
 #include "ctjs/ast/binary_expression.h"
 
-#include <iostream>
-
 namespace ctjs::ast {
 
 BinaryExpression::BinaryExpression(std::string file_name, SourceLocation loc,

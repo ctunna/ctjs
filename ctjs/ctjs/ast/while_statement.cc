@@ -1,7 +1,5 @@
 #include "ctjs/ast/while_statement.h"
 
-#include <iostream>
-
 namespace ctjs::ast {
 WhileStatement::WhileStatement(std::string file_name, SourceLocation loc,
                                ExpressionPtr condition, StatementPtr body)

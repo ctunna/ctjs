@@ -4,15 +4,8 @@
 #include <string>
 #include <vector>
 
-// #include "ctjs/ast/array_expression.h"
-// #include "ctjs/ast/assignment_expression.h"
-// #include "ctjs/ast/binary_expression.h"
-// #include "ctjs/ast/identifier.h"
-// #include "ctjs/ast/literal.h"
 #include "ctjs/ast/expression.h"
 #include "ctjs/ast/source_location.h"
-#include "ctjs/runtime/environment.h"
-#include "ctjs/runtime/value.h"
 
 namespace ctjs::ast {
 

@@ -2,7 +2,7 @@
 
 #include "ctjs/runtime/value.h"
 
-namespace ctjs::ast {
+namespace ctjs {
 class ReturnException : public std::exception {
  public:
   ReturnException(Value value) : value_(value) {}
@@ -12,4 +12,4 @@ class ReturnException : public std::exception {
  private:
   Value value_;
 };
-}  // namespace ctjs::ast
+}  // namespace ctjs

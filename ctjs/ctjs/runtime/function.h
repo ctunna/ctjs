@@ -3,15 +3,11 @@
 #include <memory>
 #include <vector>
 
+#include "ctjs/ast/function_declaration.h"
+
 namespace ctjs {
-namespace ast {
-class FunctionDeclaration;
-}
-
 class Value;
-
 class Environment;
-
 class Function {
  public:
   Function() = default;

@@ -1,11 +1,11 @@
 #pragma once
 
+#include <vector>
+
 #include "ctjs/ast/block_statement.h"
 #include "ctjs/ast/expression.h"
 #include "ctjs/ast/identifier.h"
 #include "ctjs/ast/source_location.h"
-#include "ctjs/runtime/environment.h"
-#include "ctjs/runtime/value.h"
 
 namespace ctjs::ast {
 class FunctionDeclaration {

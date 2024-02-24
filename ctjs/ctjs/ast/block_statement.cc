@@ -1,7 +1,5 @@
 #include "ctjs/ast/block_statement.h"
 
-#include <iostream>
-
 namespace ctjs::ast {
 BlockStatement::BlockStatement(std::string file_name, SourceLocation loc,
                                std::vector<StatementPtr> body)

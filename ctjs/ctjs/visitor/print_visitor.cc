@@ -1,13 +1,12 @@
-#include "ctjs/ast/print_visitor.h"
+#include "ctjs/visitor/print_visitor.h"
 
 #include <iostream>
 #include <string>
 #include <variant>
 
-namespace ctjs::ast {
+namespace ctjs {
 
-
-void PrintVisitor::operator()(std::shared_ptr<Program> program) const {
+void PrintVisitor::operator()(std::shared_ptr<ast::Program> program) const {
   std::cout << std::string(indent_, ' ') << "Program([\n";
   for (auto& statement : program->body) {
     std::visit(PrintVisitor{indent_ + 2}, statement);
@@ -16,7 +15,8 @@ void PrintVisitor::operator()(std::shared_ptr<Program> program) const {
   std::cout << "])";
 }
 
-void PrintVisitor::operator()(std::shared_ptr<BlockStatement> statement) const {
+void PrintVisitor::operator()(
+    std::shared_ptr<ast::BlockStatement> statement) const {
   std::cout << std::string(indent_, ' ') << "BlockStatement([\n";
   for (auto& statement : statement->body) {
     std::visit(PrintVisitor{indent_ + 2}, statement);
@@ -26,7 +26,7 @@ void PrintVisitor::operator()(std::shared_ptr<BlockStatement> statement) const {
 }
 
 void PrintVisitor::operator()(
-    std::shared_ptr<ReturnStatement> statement) const {
+    std::shared_ptr<ast::ReturnStatement> statement) const {
   std::cout << std::string(indent_, ' ') << "ReturnStatement(\n";
   if (statement->argument_) {
     std::visit(PrintVisitor{indent_ + 2}, *statement->argument_);
@@ -36,7 +36,8 @@ void PrintVisitor::operator()(
   std::cout << "\n" << std::string(indent_, ' ') << ")";
 }
 
-void PrintVisitor::operator()(std::shared_ptr<VariableDeclaration> decl) const {
+void PrintVisitor::operator()(
+    std::shared_ptr<ast::VariableDeclaration> decl) const {
   std::cout << std::string(indent_, ' ') << "VariableDeclaration([";
   for (auto& d : decl->declarations) {
     std::cout << "\n";
@@ -46,7 +47,8 @@ void PrintVisitor::operator()(std::shared_ptr<VariableDeclaration> decl) const {
   std::cout << std::string(indent_, ' ') << "])";
 }
 
-void PrintVisitor::operator()(std::shared_ptr<VariableDeclarator> decl) const {
+void PrintVisitor::operator()(
+    std::shared_ptr<ast::VariableDeclarator> decl) const {
   std::cout << std::string(indent_, ' ') << "VariableDeclarator(";
   std::cout << "\n";
   std::visit(PrintVisitor{indent_ + 2}, decl->id);
@@ -56,7 +58,8 @@ void PrintVisitor::operator()(std::shared_ptr<VariableDeclarator> decl) const {
   std::cout << "\n" << std::string(indent_, ' ') << ")";
 }
 
-void PrintVisitor::operator()(std::shared_ptr<IfStatement> statement) const {
+void PrintVisitor::operator()(
+    std::shared_ptr<ast::IfStatement> statement) const {
   std::cout << std::string(indent_, ' ') << "IfStatement(\n";
   std::visit(PrintVisitor{indent_ + 2}, statement->test);
   std::cout << "\n";
@@ -70,7 +73,8 @@ void PrintVisitor::operator()(std::shared_ptr<IfStatement> statement) const {
   std::cout << "\n" << std::string(indent_, ' ') << ")";
 }
 
-void PrintVisitor::operator()(std::shared_ptr<WhileStatement> statement) const {
+void PrintVisitor::operator()(
+    std::shared_ptr<ast::WhileStatement> statement) const {
   std::cout << std::string(indent_, ' ') << "WhileStatement(\n";
   std::visit(PrintVisitor{indent_ + 2}, statement->condition);
   std::cout << ",\n";
@@ -78,7 +82,8 @@ void PrintVisitor::operator()(std::shared_ptr<WhileStatement> statement) const {
   std::cout << "\n" << std::string(indent_, ' ') << ")";
 }
 
-void PrintVisitor::operator()(std::shared_ptr<FunctionDeclaration> decl) const {
+void PrintVisitor::operator()(
+    std::shared_ptr<ast::FunctionDeclaration> decl) const {
   std::cout << std::string(indent_, ' ') << "FunctionDeclaration(\n";
   std::visit(PrintVisitor{indent_ + 2}, decl->id);
   std::cout << "\n";
@@ -91,13 +96,13 @@ void PrintVisitor::operator()(std::shared_ptr<FunctionDeclaration> decl) const {
 }
 
 void PrintVisitor::operator()(
-    std::shared_ptr<ExpressionStatement> statement) const {
+    std::shared_ptr<ast::ExpressionStatement> statement) const {
   std::cout << std::string(indent_, ' ') << "ExpressionStatement(\n";
   std::visit(PrintVisitor{indent_ + 2}, statement->expression_);
   std::cout << "\n" << std::string(indent_, ' ') << ")";
 }
 void PrintVisitor::operator()(
-    std::shared_ptr<ArrayExpression> expression) const {
+    std::shared_ptr<ast::ArrayExpression> expression) const {
   std::cout << std::string(indent_, ' ') << "ArrayExpression(";
   for (auto const& element : expression->elements) {
     std::visit(PrintVisitor{indent_ + 2}, element);
@@ -106,7 +111,7 @@ void PrintVisitor::operator()(
   std::cout << std::string(indent_, ' ') << ")";
 }
 void PrintVisitor::operator()(
-    std::shared_ptr<AssignmentExpression> expression) const {
+    std::shared_ptr<ast::AssignmentExpression> expression) const {
   std::cout << std::string(indent_, ' ') << "AssignmentExpression(";
   std::cout << "\n";
   std::visit(PrintVisitor{indent_ + 2}, expression->left);
@@ -117,7 +122,7 @@ void PrintVisitor::operator()(
 }
 
 void PrintVisitor::operator()(
-    std::shared_ptr<BinaryExpression> expression) const {
+    std::shared_ptr<ast::BinaryExpression> expression) const {
   std::cout << std::string(indent_, ' ') << "BinaryExpression("
             << to_symbol(expression->op) << ",\n";
   std::visit(PrintVisitor{indent_ + 2}, expression->left);
@@ -127,7 +132,7 @@ void PrintVisitor::operator()(
 }
 
 void PrintVisitor::operator()(
-    std::shared_ptr<CallExpression> expression) const {
+    std::shared_ptr<ast::CallExpression> expression) const {
   std::cout << std::string(indent_, ' ') << "CallExpression(\n";
   std::visit(PrintVisitor{indent_ + 2}, expression->callee);
   std::cout << ",\n";
@@ -137,12 +142,12 @@ void PrintVisitor::operator()(
   }
   std::cout << std::string(indent_, ' ') << ")";
 }
-void PrintVisitor::operator()(std::shared_ptr<Identifier> id) const {
+void PrintVisitor::operator()(std::shared_ptr<ast::Identifier> id) const {
   std::cout << std::string(indent_, ' ') << "Identifier(" << id->name << ")";
 }
 
-void PrintVisitor::operator()(std::shared_ptr<Literal> literal) const {
+void PrintVisitor::operator()(std::shared_ptr<ast::Literal> literal) const {
   std::cout << std::string(indent_, ' ') << "Literal("
             << literal->value.to_string() << ")";
 }
-}  // namespace ctjs::ast
+}  // namespace ctjs

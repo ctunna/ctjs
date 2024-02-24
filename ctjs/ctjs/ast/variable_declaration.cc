@@ -1,7 +1,5 @@
 #include "ctjs/ast/variable_declaration.h"
 
-#include <iostream>
-
 namespace ctjs::ast {
 VariableDeclaration::VariableDeclaration(
     std::string file_name, SourceLocation loc,

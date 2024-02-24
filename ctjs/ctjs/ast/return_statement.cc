@@ -2,8 +2,6 @@
 
 #include <iostream>
 
-#include "ctjs/ast/return_exception.h"
-
 namespace ctjs::ast {
 ReturnStatement::ReturnStatement(std::string file_name, SourceLocation loc,
                                  std::optional<ExpressionPtr> argument)

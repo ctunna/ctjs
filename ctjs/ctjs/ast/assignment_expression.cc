@@ -1,9 +1,5 @@
 #include "ctjs/ast/assignment_expression.h"
 
-#include <iostream>
-
-#include "ctjs/ast/identifier.h"
-
 namespace ctjs::ast {
 AssignmentExpression::AssignmentExpression(std::string file_name,
                                            SourceLocation loc,

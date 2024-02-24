@@ -3,11 +3,8 @@
 #include <memory>
 #include <vector>
 
-#include "ctjs/ast/expression.h"
 #include "ctjs/ast/source_location.h"
 #include "ctjs/ast/statement.h"
-#include "ctjs/runtime/environment.h"
-#include "ctjs/runtime/value.h"
 
 namespace ctjs::ast {
 class BlockStatement {

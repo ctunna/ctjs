@@ -19,41 +19,41 @@
 #include "ctjs/runtime/environment.h"
 #include "ctjs/runtime/value.h"
 
-namespace ctjs::ast {
+namespace ctjs {
 class InterpreterVisitor {
  public:
-  auto operator()(std::shared_ptr<Program> program,
+  auto operator()(std::shared_ptr<ast::Program> program,
                   std::shared_ptr<Environment> environment) const -> Value;
 
-  auto operator()(std::shared_ptr<BlockStatement> statement,
+  auto operator()(std::shared_ptr<ast::BlockStatement> statement,
                   std::shared_ptr<Environment> environment) const -> Value;
-  auto operator()(std::shared_ptr<ReturnStatement> statement,
+  auto operator()(std::shared_ptr<ast::ReturnStatement> statement,
                   std::shared_ptr<Environment> environment) const -> Value;
-  auto operator()(std::shared_ptr<IfStatement> statement,
+  auto operator()(std::shared_ptr<ast::IfStatement> statement,
                   std::shared_ptr<Environment> environment) const -> Value;
-  auto operator()(std::shared_ptr<WhileStatement> statement,
+  auto operator()(std::shared_ptr<ast::WhileStatement> statement,
                   std::shared_ptr<Environment> environment) const -> Value;
-  auto operator()(std::shared_ptr<ExpressionStatement> statement,
+  auto operator()(std::shared_ptr<ast::ExpressionStatement> statement,
                   std::shared_ptr<Environment> environment) const -> Value;
-  auto operator()(std::shared_ptr<VariableDeclaration> decl,
+  auto operator()(std::shared_ptr<ast::VariableDeclaration> decl,
                   std::shared_ptr<Environment> environment) const -> Value;
-  auto operator()(std::shared_ptr<VariableDeclarator> decl,
+  auto operator()(std::shared_ptr<ast::VariableDeclarator> decl,
                   std::shared_ptr<Environment> environment) const -> Value;
-  auto operator()(std::shared_ptr<FunctionDeclaration> decl,
+  auto operator()(std::shared_ptr<ast::FunctionDeclaration> decl,
                   std::shared_ptr<Environment> environment) const -> Value;
 
-  auto operator()(std::shared_ptr<ArrayExpression> expression,
+  auto operator()(std::shared_ptr<ast::ArrayExpression> expression,
                   std::shared_ptr<Environment> environment) const -> Value;
-  auto operator()(std::shared_ptr<AssignmentExpression> expression,
+  auto operator()(std::shared_ptr<ast::AssignmentExpression> expression,
                   std::shared_ptr<Environment> environment) const -> Value;
-  auto operator()(std::shared_ptr<BinaryExpression> expression,
+  auto operator()(std::shared_ptr<ast::BinaryExpression> expression,
                   std::shared_ptr<Environment> environment) const -> Value;
-  auto operator()(std::shared_ptr<CallExpression> expression,
+  auto operator()(std::shared_ptr<ast::CallExpression> expression,
                   std::shared_ptr<Environment> environment) const -> Value;
-  auto operator()(std::shared_ptr<Identifier> id,
+  auto operator()(std::shared_ptr<ast::Identifier> id,
                   std::shared_ptr<Environment> environment) const -> Value;
-  auto operator()(std::shared_ptr<Literal> literal,
+  auto operator()(std::shared_ptr<ast::Literal> literal,
                   std::shared_ptr<Environment> environment) const -> Value;
 };
 
-}  // namespace ctjs::ast
+}  // namespace ctjs

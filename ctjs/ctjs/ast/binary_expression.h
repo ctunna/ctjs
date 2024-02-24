@@ -5,8 +5,6 @@
 #include "ctjs/ast/binary_operator.h"
 #include "ctjs/ast/expression.h"
 #include "ctjs/ast/source_location.h"
-#include "ctjs/runtime/environment.h"
-#include "ctjs/runtime/value.h"
 
 namespace ctjs::ast {
 
