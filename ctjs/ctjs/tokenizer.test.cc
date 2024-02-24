@@ -3,7 +3,7 @@
 #include <iostream>
 #include <vector>
 
-#include "catch2/catch_test_macros.hpp"
+#include "catch2/catch_testmacros.hpp"
 
 using ctjs::ast::TokenType;
 

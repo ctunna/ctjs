@@ -1,6 +1,7 @@
 #pragma once
 
 #include <memory>
+#include <optional>
 
 #include "ctjs/ast/expression.h"
 #include "ctjs/ast/source_location.h"
@@ -8,18 +9,16 @@
 
 namespace ctjs::ast {
 
-class ReturnStatement : public Statement {
+class ReturnStatement {
  public:
   ReturnStatement(std::string file_name, SourceLocation loc,
-                  std::shared_ptr<Expression> argument);
+                  std::optional<ExpressionPtr> argument);
 
-  void to_string(int indent = 0) override;
-  auto evaluate(std::shared_ptr<Environment> environment) -> Value override;
 
- private:
-  std::string file_name_;
-  SourceLocation loc_;
-  std::shared_ptr<Expression> argument_;
+
+  std::string file_name;
+  SourceLocation loc;
+  std::optional<ExpressionPtr> argument_;
 };
 
 }  // namespace ctjs::ast

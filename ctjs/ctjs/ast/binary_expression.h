@@ -2,51 +2,23 @@
 
 #include <memory>
 
+#include "ctjs/ast/binary_operator.h"
 #include "ctjs/ast/expression.h"
 #include "ctjs/ast/source_location.h"
 #include "ctjs/runtime/environment.h"
 #include "ctjs/runtime/value.h"
 
 namespace ctjs::ast {
-enum class BinaryOperator {
-  Add,
-  Sub,
-  Mul,
-  Div,
-  Mod,
-  Pow,
-  Equal,
-  NotEqual,
-  LessThan,
-  LessThanOrEqual,
-  GreaterThan,
-  GreaterThanOrEqual,
-  And,
-  Or,
-  BitwiseAnd,
-  BitwiseOr,
-  BitwiseXor,
-  LeftShift,
-  RightShift,
-  UnsignedRightShift,
-  InstanceOf,
-  In,
-};
 
-class BinaryExpression : public Expression {
+class BinaryExpression {
  public:
   BinaryExpression(std::string file_name, SourceLocation loc, BinaryOperator op,
-                   std::shared_ptr<Expression> left,
-                   std::shared_ptr<Expression> right);
+                   ExpressionPtr left, ExpressionPtr right);
 
-  void to_string(int indent = 0) override;
-  auto evaluate(std::shared_ptr<Environment> environment) -> Value override;
-
- private:
-  std::string file_name_;
-  SourceLocation loc_;
-  BinaryOperator op_;
-  std::shared_ptr<Expression> left_;
-  std::shared_ptr<Expression> right_;
+  std::string const file_name;
+  SourceLocation const loc;
+  BinaryOperator const op;
+  ExpressionPtr const left;
+  ExpressionPtr const right;
 };
 }  // namespace ctjs::ast

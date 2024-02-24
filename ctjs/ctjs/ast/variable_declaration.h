@@ -3,23 +3,17 @@
 #include <string>
 #include <vector>
 
-#include "ctjs/ast/declaration.h"
 #include "ctjs/ast/variable_declarator.h"
 
 namespace ctjs::ast {
-class VariableDeclaration : public Declaration {
+class VariableDeclaration {
  public:
-  VariableDeclaration(
-      std::string file_name, SourceLocation loc,
-      std::vector<std::shared_ptr<VariableDeclarator>> declarations);
+  VariableDeclaration(std::string file_name, SourceLocation loc,
+                      std::vector<VariableDeclaratorPtr> declarations);
 
-  void to_string(int indent = 0) override;
-  auto evaluate(std::shared_ptr<Environment> environment) -> Value override;
-
- private:
-  std::string file_name_;
-  SourceLocation loc_;
-  std::string const kind_{"var"};
-  std::vector<std::shared_ptr<VariableDeclarator>> declarations_;
+  std::string const file_name;
+  SourceLocation const loc;
+  std::string const kind{"var"};
+  std::vector<VariableDeclaratorPtr> declarations;
 };
 }  // namespace ctjs::ast

@@ -5,19 +5,14 @@
 #include "ctjs/ast/statement.h"
 
 namespace ctjs::ast {
-class WhileStatement : public Statement {
+class WhileStatement {
  public:
   WhileStatement(std::string file_name, SourceLocation loc,
-                 std::shared_ptr<Expression> condition,
-                 std::shared_ptr<Statement> body);
+                 ExpressionPtr condition, StatementPtr body);
 
-  void to_string(int indent = 0) override;
-  auto evaluate(std::shared_ptr<Environment> environment) -> Value override;
-
- private:
-  std::string file_name_;
-  SourceLocation loc_;
-  std::shared_ptr<Expression> condition_;
-  std::shared_ptr<Statement> body_;
+  std::string const file_name;
+  SourceLocation const loc;
+  ExpressionPtr const condition;
+  StatementPtr const body;
 };
 }  // namespace ctjs::ast

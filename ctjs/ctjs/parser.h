@@ -32,7 +32,7 @@ class Parser {
   auto parse() -> std::shared_ptr<ast::Program>;
 
  private:
-  auto parse_statement() -> std::shared_ptr<ast::Statement>;
+  auto parse_statement() -> ast::StatementPtr;
 
   auto parse_return_statement() -> std::shared_ptr<ast::ReturnStatement>;
 
@@ -66,13 +66,13 @@ class Parser {
 
   auto parse_string_literal() -> std::shared_ptr<ast::Literal>;
 
-  auto parse_expression() -> std::shared_ptr<ast::Expression>;
+  auto parse_expression() -> ast::ExpressionPtr;
 
   auto consume_token(ast::TokenType type) -> Token;
 
   auto expect_token(ast::TokenType type) -> std::optional<Token>;
 
-  std::string file_name_{"index.js"};
+  std::string file_name{"index.js"};
   ast::SourceLocation location_{"index.js", ast::Position(0, 0),
                                 ast::Position(0, 0)};
   Tokenizer tokenizer_;

@@ -2,20 +2,15 @@
 
 #include "ctjs/ast/expression.h"
 #include "ctjs/ast/source_location.h"
-#include "ctjs/ast/statement.h"
 
 namespace ctjs::ast {
-class ExpressionStatement : public Statement {
+class ExpressionStatement {
  public:
   ExpressionStatement(std::string file_name, SourceLocation loc,
-                      std::shared_ptr<Expression> expression);
+                      ExpressionPtr expression);
 
-  void to_string(int indent = 0) override;
-  auto evaluate(std::shared_ptr<Environment> environment) -> Value override;
-
- private:
-  std::shared_ptr<Expression> expression_;
-  std::string file_name_;
-  SourceLocation loc_;
+  ExpressionPtr const expression_;
+  std::string const file_name;
+  SourceLocation const loc;
 };
 }  // namespace ctjs::ast

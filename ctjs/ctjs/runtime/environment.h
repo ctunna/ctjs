@@ -1,7 +1,9 @@
 #pragma once
 
+#include <memory>
 #include <string>
 #include <unordered_map>
+#include <variant>
 
 #include "ctjs/runtime/value.h"
 
@@ -16,4 +18,5 @@ class Environment {
  private:
   std::unordered_map<std::string, Value> scope_;
 };
+using EnvironmentPtr = std::variant<std::shared_ptr<Environment>>;
 }  // namespace ctjs

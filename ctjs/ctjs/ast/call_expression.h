@@ -4,25 +4,29 @@
 #include <string>
 #include <vector>
 
+// #include "ctjs/ast/array_expression.h"
+// #include "ctjs/ast/assignment_expression.h"
+// #include "ctjs/ast/binary_expression.h"
+// #include "ctjs/ast/identifier.h"
+// #include "ctjs/ast/literal.h"
 #include "ctjs/ast/expression.h"
 #include "ctjs/ast/source_location.h"
 #include "ctjs/runtime/environment.h"
 #include "ctjs/runtime/value.h"
 
 namespace ctjs::ast {
-class CallExpression : public Expression {
+
+// using Expression =
+//     std::variant<ArrayExpression, AssignmentExpression, BinaryExpression,
+//                  CallExpression, Identifier, Literal>;
+class CallExpression {
  public:
   CallExpression(std::string file_name, SourceLocation loc,
-                 std::shared_ptr<Expression> callee,
-                 std::vector<std::shared_ptr<Expression>> arguments);
+                 ExpressionPtr callee, std::vector<ExpressionPtr> arguments);
 
-  void to_string(int indent = 0) override;
-  auto evaluate(std::shared_ptr<Environment> environment) -> Value override;
-
- private:
-  std::string file_name_;
-  SourceLocation loc_;
-  std::shared_ptr<Expression> callee_;
-  std::vector<std::shared_ptr<Expression>> arguments_;
+  std::string const file_name;
+  SourceLocation const loc;
+  ExpressionPtr const callee;
+  std::vector<ExpressionPtr> const arguments;
 };
 }  // namespace ctjs::ast

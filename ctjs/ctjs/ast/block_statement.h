@@ -10,17 +10,13 @@
 #include "ctjs/runtime/value.h"
 
 namespace ctjs::ast {
-class BlockStatement : public Statement {
+class BlockStatement {
  public:
   BlockStatement(std::string file_name, SourceLocation loc,
-                 std::vector<std::shared_ptr<Statement>> body);
+                 std::vector<StatementPtr> body);
 
-  void to_string(int indent = 0) override;
-  auto evaluate(std::shared_ptr<Environment> environment) -> Value override;
-
- private:
-  std::string file_name_;
-  SourceLocation loc_;
-  std::vector<std::shared_ptr<Statement>> body_;
+  std::string const file_name;
+  SourceLocation const loc;
+  std::vector<StatementPtr> const body;
 };
 }  // namespace ctjs::ast

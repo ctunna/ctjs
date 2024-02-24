@@ -1,25 +1,21 @@
 #pragma once
 
+#include <optional>
+
 #include "ctjs/ast/expression.h"
 #include "ctjs/ast/source_location.h"
 #include "ctjs/ast/statement.h"
 
 namespace ctjs::ast {
-class IfStatement : public Statement {
+class IfStatement {
  public:
-  IfStatement(std::string file_name, SourceLocation loc,
-              std::shared_ptr<Expression> test,
-              std::shared_ptr<Statement> consequent,
-              std::shared_ptr<Statement> alternate);
+  IfStatement(std::string file_name, SourceLocation loc, ExpressionPtr test,
+              StatementPtr consequent, std::optional<StatementPtr> alternate);
 
-  void to_string(int indent = 0) override;
-  auto evaluate(std::shared_ptr<Environment> environment) -> Value override;
-
- private:
-  std::string file_name_;
-  SourceLocation loc_;
-  std::shared_ptr<Expression> test_;
-  std::shared_ptr<Statement> consequent_;
-  std::shared_ptr<Statement> alternate_;
+  std::string const file_name;
+  SourceLocation const loc;
+  ExpressionPtr const test;
+  StatementPtr const consquent;
+  std::optional<StatementPtr> const alternate;
 };
 }  // namespace ctjs::ast
