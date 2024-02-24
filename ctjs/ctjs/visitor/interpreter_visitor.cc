@@ -9,9 +9,8 @@ namespace ctjs {
 auto InterpreterVisitor::operator()(
     std::shared_ptr<ast::Program> program,
     std::shared_ptr<Environment> environment) const -> Value {
-  EnvironmentPtr e{environment};
   for (auto& stmt : program->body) {
-    std::visit(*this, stmt, e);
+    visit(stmt, environment);
   }
   return Value();
 }
@@ -19,9 +18,8 @@ auto InterpreterVisitor::operator()(
 auto InterpreterVisitor::operator()(
     std::shared_ptr<ast::BlockStatement> statement,
     std::shared_ptr<Environment> environment) const -> Value {
-  EnvironmentPtr e{environment};
   for (auto& stmt : statement->body) {
-    std::visit(*this, stmt, e);
+    visit(stmt, environment);
   }
   return Value();
 }
@@ -29,8 +27,7 @@ auto InterpreterVisitor::operator()(
 auto InterpreterVisitor::operator()(
     std::shared_ptr<ast::ReturnStatement> statement,
     std::shared_ptr<Environment> environment) const -> Value {
-  EnvironmentPtr e{environment};
-  auto value{statement->argument_ ? std::visit(*this, *statement->argument_, e)
+  auto value{statement->argument_ ? visit(*statement->argument_, environment)
                                   : Value()};
   throw ReturnException(value);
 }
@@ -38,9 +35,8 @@ auto InterpreterVisitor::operator()(
 auto InterpreterVisitor::operator()(
     std::shared_ptr<ast::VariableDeclaration> decl,
     std::shared_ptr<Environment> environment) const -> Value {
-  EnvironmentPtr e{environment};
   for (auto& decl : decl->declarations) {
-    std::visit(*this, decl, e);
+    visit(decl, environment);
   }
   return Value();
 }
@@ -48,8 +44,7 @@ auto InterpreterVisitor::operator()(
 auto InterpreterVisitor::operator()(
     std::shared_ptr<ast::VariableDeclarator> decl,
     std::shared_ptr<Environment> environment) const -> Value {
-  EnvironmentPtr e{environment};
-  auto value{std::visit(*this, decl->init, e)};
+  auto value{visit(decl->init, environment)};
   auto id{std::get<std::shared_ptr<ast::Identifier>>(decl->id)};
   environment->set(id->name, value);
   return value;
@@ -58,12 +53,11 @@ auto InterpreterVisitor::operator()(
 auto InterpreterVisitor::operator()(
     std::shared_ptr<ast::IfStatement> statement,
     std::shared_ptr<Environment> environment) const -> Value {
-  EnvironmentPtr e{environment};
-  auto test{std::visit(*this, statement->test, e)};
+  auto test{visit(statement->test, environment)};
   if (test.coerce<bool>()) {
-    return std::visit(*this, statement->consquent, e);
+    return visit(statement->consquent, environment);
   } else if (statement->alternate) {
-    return std::visit(*this, *statement->alternate, e);
+    return visit(*statement->alternate, environment);
   }
   return Value();
 }
@@ -71,9 +65,8 @@ auto InterpreterVisitor::operator()(
 auto InterpreterVisitor::operator()(
     std::shared_ptr<ast::WhileStatement> statement,
     std::shared_ptr<Environment> environment) const -> Value {
-  EnvironmentPtr e{environment};
-  while (std::visit(*this, statement->condition, e).coerce<bool>()) {
-    std::visit(*this, statement->body, e);
+  while (visit(statement->condition, environment).coerce<bool>()) {
+    visit(statement->body, environment);
   }
   return Value();
 }
@@ -90,17 +83,15 @@ auto InterpreterVisitor::operator()(
 auto InterpreterVisitor::operator()(
     std::shared_ptr<ast::ExpressionStatement> statement,
     std::shared_ptr<Environment> environment) const -> Value {
-  EnvironmentPtr e{environment};
-  return std::visit(*this, statement->expression_, e);
+  return visit(statement->expression_, environment);
 }
 
 auto InterpreterVisitor::operator()(
     std::shared_ptr<ast::ArrayExpression> expression,
     std::shared_ptr<Environment> environment) const -> Value {
   std::vector<Value> values;
-  EnvironmentPtr e{environment};
   for (auto const& element : expression->elements) {
-    values.push_back(std::visit(*this, element, e));
+    values.push_back(visit(element, environment));
   }
   return Value();
 }
@@ -108,8 +99,7 @@ auto InterpreterVisitor::operator()(
 auto InterpreterVisitor::operator()(
     std::shared_ptr<ast::AssignmentExpression> expression,
     std::shared_ptr<Environment> environment) const -> Value {
-  EnvironmentPtr e{environment};
-  auto value{std::visit(*this, expression->right, e)};
+  auto value{visit(expression->right, environment)};
   auto id{std::get<std::shared_ptr<ast::Identifier>>(expression->left)};
   environment->set(id->name, value);
   return value;
@@ -118,9 +108,8 @@ auto InterpreterVisitor::operator()(
 auto InterpreterVisitor::operator()(
     std::shared_ptr<ast::BinaryExpression> expression,
     std::shared_ptr<Environment> environment) const -> Value {
-  EnvironmentPtr e{environment};
-  auto left{std::visit(*this, expression->left, e)};
-  auto right{std::visit(*this, expression->right, e)};
+  auto left{visit(expression->left, environment)};
+  auto right{visit(expression->right, environment)};
   switch (expression->op) {
     case ast::BinaryOperator::Add:
       return left + right;
@@ -142,11 +131,10 @@ auto InterpreterVisitor::operator()(
 auto InterpreterVisitor::operator()(
     std::shared_ptr<ast::CallExpression> expression,
     std::shared_ptr<Environment> environment) const -> Value {
-  EnvironmentPtr e{environment};
-  auto callee{std::visit(*this, expression->callee, e).coerce<Function>()};
+  auto callee{visit(expression->callee, environment).coerce<Function>()};
   std::vector<Value> args;
   for (auto& arg : expression->arguments) {
-    args.push_back(std::visit(*this, arg, e));
+    args.push_back(visit(arg, environment));
   }
   try {
     return callee.call(args);

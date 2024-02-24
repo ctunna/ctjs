@@ -4,6 +4,7 @@
 
 #include "ctjs/ast/array_expression.h"
 #include "ctjs/ast/assignment_expression.h"
+#include "ctjs/ast/ast_node.h"
 #include "ctjs/ast/binary_expression.h"
 #include "ctjs/ast/block_statement.h"
 #include "ctjs/ast/call_expression.h"
@@ -54,6 +55,12 @@ class InterpreterVisitor {
                   std::shared_ptr<Environment> environment) const -> Value;
   auto operator()(std::shared_ptr<ast::Literal> literal,
                   std::shared_ptr<Environment> environment) const -> Value;
+
+ private:
+  template <typename T>
+  auto visit(T var, EnvironmentPtr environment) const -> Value {
+    return std::visit(*this, var, environment);
+  }
 };
 
 }  // namespace ctjs
