@@ -4,6 +4,7 @@
 #include <optional>
 #include <string_view>
 
+#include "ctjs/ast/array_expression.h"
 #include "ctjs/ast/block_statement.h"
 #include "ctjs/ast/expression_statement.h"
 #include "ctjs/ast/function_declaration.h"
@@ -66,13 +67,18 @@ class Parser {
 
   auto parse_string_literal() -> std::shared_ptr<ast::Literal>;
 
+  auto optional_parse_array_expression()
+      -> std::optional<std::shared_ptr<ast::ArrayExpression>>;
+
+  auto parse_array_expression() -> std::shared_ptr<ast::ArrayExpression>;
+
   auto parse_expression() -> ast::ExpressionPtr;
 
   auto consume_token(ast::TokenType type) -> Token;
 
   auto expect_token(ast::TokenType type) -> std::optional<Token>;
 
-  std::string file_name{"index.js"};
+  std::string file_name_{"index.js"};
   ast::SourceLocation location_{"index.js", ast::Position(0, 0),
                                 ast::Position(0, 0)};
   Tokenizer tokenizer_;

@@ -61,7 +61,7 @@ auto Parser::parse() -> std::shared_ptr<ast::Program> {
   while (tokenizer_.ready()) {
     statements.push_back(parse_statement());
   }
-  return std::make_shared<ast::Program>(file_name, location_, statements);
+  return std::make_shared<ast::Program>(file_name_, location_, statements);
 }
 
 auto Parser::parse_statement() -> ast::StatementPtr {
@@ -88,12 +88,12 @@ auto Parser::parse_return_statement() -> std::shared_ptr<ast::ReturnStatement> {
   consume_token(TokenType::Return);
   if (expect_token(TokenType::Semicolon)) {
     consume_token(TokenType::Semicolon);
-    return std::make_shared<ast::ReturnStatement>(file_name, location_,
+    return std::make_shared<ast::ReturnStatement>(file_name_, location_,
                                                   std::nullopt);
   }
   auto expression{parse_expression()};
   consume_token(TokenType::Semicolon);
-  return std::make_shared<ast::ReturnStatement>(file_name, location_,
+  return std::make_shared<ast::ReturnStatement>(file_name_, location_,
                                                 expression);
 }
 
@@ -111,7 +111,7 @@ auto Parser::parse_function_declaration()
   }
   consume_token(TokenType::ParenClose);
   auto body{parse_block_statement()};
-  return std::make_shared<ast::FunctionDeclaration>(file_name, location_,
+  return std::make_shared<ast::FunctionDeclaration>(file_name_, location_,
                                                     identifier, params, body);
 }
 
@@ -119,7 +119,7 @@ auto Parser::parse_expression_statement()
     -> std::shared_ptr<ast::ExpressionStatement> {
   auto expression{parse_expression()};
   consume_token(TokenType::Semicolon);
-  return std::make_shared<ast::ExpressionStatement>(file_name, location_,
+  return std::make_shared<ast::ExpressionStatement>(file_name_, location_,
                                                     expression);
 }
 
@@ -129,7 +129,7 @@ auto Parser::parse_while_statement() -> std::shared_ptr<ast::WhileStatement> {
   auto test{parse_expression()};
   consume_token(TokenType::ParenClose);
   auto body{parse_statement()};
-  return std::make_shared<ast::WhileStatement>(file_name, location_, test,
+  return std::make_shared<ast::WhileStatement>(file_name_, location_, test,
                                                body);
 }
 
@@ -140,7 +140,7 @@ auto Parser::parse_block_statement() -> std::shared_ptr<ast::BlockStatement> {
     statements.push_back(parse_statement());
   }
   consume_token(TokenType::CurlyClose);
-  return std::make_shared<ast::BlockStatement>(file_name, location_,
+  return std::make_shared<ast::BlockStatement>(file_name_, location_,
                                                statements);
 }
 
@@ -151,12 +151,12 @@ auto Parser::parse_if_statement() -> std::shared_ptr<ast::IfStatement> {
   consume_token(TokenType::ParenClose);
   auto consequent{parse_statement()};
   if (!expect_token(TokenType::Else)) {
-    return std::make_shared<ast::IfStatement>(file_name, location_, test,
+    return std::make_shared<ast::IfStatement>(file_name_, location_, test,
                                               consequent, std::nullopt);
   }
   consume_token(TokenType::Else);
   auto alternate{parse_statement()};
-  return std::make_shared<ast::IfStatement>(file_name, location_, test,
+  return std::make_shared<ast::IfStatement>(file_name_, location_, test,
                                             consequent, alternate);
 }
 
@@ -168,9 +168,9 @@ auto Parser::parse_variable_declaration()
   auto expression{parse_expression()};
   consume_token(TokenType::Semicolon);
   auto declarator{std::make_shared<ast::VariableDeclarator>(
-      file_name, location_, identifier, expression)};
+      file_name_, location_, identifier, expression)};
   std::vector<ast::VariableDeclaratorPtr> declarators{declarator};
-  return std::make_shared<ast::VariableDeclaration>(file_name, location_,
+  return std::make_shared<ast::VariableDeclaration>(file_name_, location_,
                                                     declarators);
 }
 
@@ -184,7 +184,7 @@ auto Parser::optional_parse_identifier()
 
 auto Parser::parse_identifier() -> std::shared_ptr<ast::Identifier> {
   auto token{consume_token(TokenType::Identifier)};
-  return std::make_shared<ast::Identifier>(file_name, location_, token.value);
+  return std::make_shared<ast::Identifier>(file_name_, location_, token.value);
 }
 
 auto Parser::optional_parse_numeric_literal()
@@ -198,7 +198,7 @@ auto Parser::optional_parse_numeric_literal()
 
 auto Parser::parse_numeric_literal() -> std::shared_ptr<ast::Literal> {
   auto token{consume_token(TokenType::NumericLiteral)};
-  return std::make_shared<ast::Literal>(file_name, location_,
+  return std::make_shared<ast::Literal>(file_name_, location_,
                                         std::stoi(token.value));
 }
 
@@ -213,7 +213,28 @@ auto Parser::optional_parse_string_literal()
 
 auto Parser::parse_string_literal() -> std::shared_ptr<ast::Literal> {
   auto token{consume_token(TokenType::StringLiteral)};
-  return std::make_shared<ast::Literal>(file_name, location_, token.value);
+  return std::make_shared<ast::Literal>(file_name_, location_, token.value);
+}
+
+auto Parser::optional_parse_array_expression()
+    -> std::optional<std::shared_ptr<ast::ArrayExpression>> {
+  if (!expect_token(TokenType::BracketOpen)) {
+    return {};
+  }
+  return parse_array_expression();
+}
+
+auto Parser::parse_array_expression() -> std::shared_ptr<ast::ArrayExpression> {
+  consume_token(TokenType::BracketOpen);
+  std::vector<ast::ExpressionPtr> elements;
+  while (!expect_token(TokenType::BracketClose)) {
+    elements.push_back(parse_expression());
+    if (expect_token(TokenType::Comma)) {
+      consume_token(TokenType::Comma);
+    }
+  }
+  consume_token(TokenType::BracketClose);
+  return std::make_shared<ast::ArrayExpression>(file_name_, location_, elements);
 }
 
 auto Parser::parse_expression() -> ast::ExpressionPtr {
@@ -222,7 +243,7 @@ auto Parser::parse_expression() -> ast::ExpressionPtr {
   if (optional_expr && expect_token(TokenType::Equals)) {
     consume_token(TokenType::Equals);
     return std::make_shared<ast::AssignmentExpression>(
-        file_name, location_, *optional_expr, parse_expression());
+        file_name_, location_, *optional_expr, parse_expression());
   }
 
   if (optional_expr && expect_token(TokenType::ParenOpen)) {
@@ -235,8 +256,12 @@ auto Parser::parse_expression() -> ast::ExpressionPtr {
       }
     }
     consume_token(TokenType::ParenClose);
-    optional_expr = std::make_shared<ast::CallExpression>(file_name, location_,
+    optional_expr = std::make_shared<ast::CallExpression>(file_name_, location_,
                                                           *optional_expr, args);
+  }
+
+  if (!optional_expr) {
+    optional_expr = optional_parse_array_expression();
   }
 
   if (!optional_expr) {
@@ -252,7 +277,7 @@ auto Parser::parse_expression() -> ast::ExpressionPtr {
   if (is_binary_operator(next.type)) {
     tokenizer_.next();
     return std::make_shared<ast::BinaryExpression>(
-        file_name, location_, to_binary_operator(next.type), expr,
+        file_name_, location_, to_binary_operator(next.type), expr,
         parse_expression());
   }
   return expr;
