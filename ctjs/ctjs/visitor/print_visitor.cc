@@ -104,6 +104,7 @@ void PrintVisitor::operator()(
 void PrintVisitor::operator()(
     std::shared_ptr<ast::ArrayExpression> expression) const {
   std::cout << std::string(indent_, ' ') << "ArrayExpression(";
+  std::cout << "\n";
   for (auto const& element : expression->elements) {
     std::visit(PrintVisitor{indent_ + 2}, element);
     std::cout << "\n";
