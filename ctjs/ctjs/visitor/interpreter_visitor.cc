@@ -54,7 +54,7 @@ auto InterpreterVisitor::operator()(
     std::shared_ptr<ast::IfStatement> statement,
     std::shared_ptr<Environment> environment) const -> Value {
   auto test{visit(statement->test, environment)};
-  if (test.coerce<bool>()) {
+  if (static_cast<bool>(test)) {
     return visit(statement->consquent, environment);
   } else if (statement->alternate) {
     return visit(*statement->alternate, environment);
@@ -65,7 +65,7 @@ auto InterpreterVisitor::operator()(
 auto InterpreterVisitor::operator()(
     std::shared_ptr<ast::WhileStatement> statement,
     std::shared_ptr<Environment> environment) const -> Value {
-  while (visit(statement->condition, environment).coerce<bool>()) {
+  while (static_cast<bool>(visit(statement->condition, environment))) {
     visit(statement->body, environment);
   }
   return Value();
@@ -131,7 +131,7 @@ auto InterpreterVisitor::operator()(
 auto InterpreterVisitor::operator()(
     std::shared_ptr<ast::CallExpression> expression,
     std::shared_ptr<Environment> environment) const -> Value {
-  auto callee{visit(expression->callee, environment).coerce<Function>()};
+  auto callee{visit(expression->callee, environment).get<Function>()};
   std::vector<Value> args;
   for (auto& arg : expression->arguments) {
     args.push_back(visit(arg, environment));

@@ -1,271 +1,89 @@
 #include "ctjs/runtime/value.h"
 
+#include "ctjs/runtime/coerce.h"
+
 namespace ctjs {
+template <typename T, typename U>
+concept HasPlusOperator = requires(T a, U b) {
+  { a + b } -> std::convertible_to<T>;
+};
+
+template <typename T, typename U>
+concept HasMinusOperator = requires(T a, U b) {
+  { a - b } -> std::convertible_to<T>;
+};
+
+template <typename T, typename U>
+concept HasMultiplyOperator = requires(T a, U b) {
+  { a* b } -> std::convertible_to<T>;
+};
+
+template <typename T, typename U>
+concept HasGreaterThanOperator = requires(T a, U b) {
+  { a > b } -> std::convertible_to<bool>;
+};
+
+template <typename T, typename U>
+concept HasEqualsOperator = requires(T a, U b) {
+  { a == b } -> std::convertible_to<bool>;
+};
+
 struct PlusVisitor {
-  auto operator()(int a, int b) const -> Value { return a + b; }
-  auto operator()(int a, bool b) const -> Value { return a + b; }
-  auto operator()(bool a, int b) const -> Value { return a + b; }
-  auto operator()(bool a, bool b) const -> Value { return a + b; }
-  auto operator()([[maybe_unused]] int a, [[maybe_unused]] Function b) const
-      -> Value {
-    throw std::runtime_error{"Unsupported operation"};
+  auto operator()(auto const& a, auto const& b) const -> Value {
+    using R = std::decay_t<decltype(a)>;
+    auto coerce{Coerce<R>{}};
+    if constexpr (HasPlusOperator<decltype(a), decltype(coerce(b))>) {
+      return a + coerce(b);
+    }
+    throw std::runtime_error("Invalid addition");
   }
-  auto operator()([[maybe_unused]] Function a, [[maybe_unused]] int b) const
-      -> Value {
-    throw std::runtime_error{"Unsupported operation"};
-  }
-  auto operator()([[maybe_unused]] bool a, [[maybe_unused]] Function b) const
-      -> Value {
-    throw std::runtime_error{"Unsupported operation"};
-  }
-  auto operator()([[maybe_unused]] Function a, [[maybe_unused]] bool b) const
-      -> Value {
-    throw std::runtime_error{"Unsupported operation"};
-  }
-  auto operator()([[maybe_unused]] Function a,
-                  [[maybe_unused]] Function b) const -> Value {
-    throw std::runtime_error{"Unsupported operation"};
-  }
-  auto operator()(int a, std::string b) const -> Value {
-    return std::to_string(a) + b;
-  }
-  auto operator()(std::string a, int b) const -> Value {
-    return a + std::to_string(b);
-  }
-  auto operator()(bool a, std::string b) const -> Value {
-    return (a ? "true" : "false") + b;
-  }
-  auto operator()(std::string a, bool b) const -> Value {
-    return a + (b ? "true" : "false");
-  }
-  auto operator()(std::string a, std::string b) const -> Value { return a + b; }
-  auto operator()([[maybe_unused]] std::string a,
-                  [[maybe_unused]] Function b) const -> Value {
-    throw std::runtime_error{"Unsupported operation"};
-  }
-  auto operator()([[maybe_unused]] Function a,
-                  [[maybe_unused]] std::string b) const -> Value {
-    throw std::runtime_error{"Unsupported operation"};
+  auto operator()(auto const& a, std::string const& b) const -> Value {
+    auto coerce{Coerce<std::string>{}};
+    return coerce(a) + b;
   }
 };
 
 struct MinusVisitor {
-  auto operator()(int a, int b) const -> Value { return a - b; }
-  auto operator()(int a, bool b) const -> Value { return a - b; }
-  auto operator()(bool a, int b) const -> Value { return a - b; }
-  auto operator()(bool a, bool b) const -> Value { return a - b; }
-  auto operator()([[maybe_unused]] int a, [[maybe_unused]] Function b) const
-      -> Value {
-    throw std::runtime_error{"Unsupported operation"};
-  }
-  auto operator()([[maybe_unused]] Function a, [[maybe_unused]] int b) const
-      -> Value {
-    throw std::runtime_error{"Unsupported operation"};
-  }
-  auto operator()([[maybe_unused]] bool a, [[maybe_unused]] Function b) const
-      -> Value {
-    throw std::runtime_error{"Unsupported operation"};
-  }
-  auto operator()([[maybe_unused]] Function a, [[maybe_unused]] bool b) const
-      -> Value {
-    throw std::runtime_error{"Unsupported operation"};
-  }
-  auto operator()([[maybe_unused]] Function a,
-                  [[maybe_unused]] Function b) const -> Value {
-    throw std::runtime_error{"Unsupported operation"};
-  }
-  auto operator()([[maybe_unused]] int a, [[maybe_unused]] std::string b) const
-      -> Value {
-    throw std::runtime_error{"Unsupported operation"};
-  }
-  auto operator()([[maybe_unused]] std::string a, [[maybe_unused]] int b) const
-      -> Value {
-    throw std::runtime_error{"Unsupported operation"};
-  }
-  auto operator()([[maybe_unused]] bool a, [[maybe_unused]] std::string b) const
-      -> Value {
-    throw std::runtime_error{"Unsupported operation"};
-  }
-  auto operator()([[maybe_unused]] std::string a, [[maybe_unused]] bool b) const
-      -> Value {
-    throw std::runtime_error{"Unsupported operation"};
-  }
-  auto operator()([[maybe_unused]] std::string a,
-                  [[maybe_unused]] std::string b) const -> Value {
-    throw std::runtime_error{"Unsupported operation"};
-  }
-  auto operator()([[maybe_unused]] std::string a,
-                  [[maybe_unused]] Function b) const -> Value {
-    throw std::runtime_error{"Unsupported operation"};
-  }
-  auto operator()([[maybe_unused]] Function a,
-                  [[maybe_unused]] std::string b) const -> Value {
-    throw std::runtime_error{"Unsupported operation"};
+  auto operator()(auto const& a, auto const& b) const -> Value {
+    using R = std::decay_t<decltype(a)>;
+    auto coerce{Coerce<R>{}};
+    if constexpr (HasMinusOperator<decltype(a), decltype(coerce(b))>) {
+      return a - coerce(b);
+    }
+    throw std::runtime_error("Invalid subtraction");
   }
 };
 
-struct MulVisitor {
-  auto operator()(int a, int b) const -> Value { return a * b; }
-  auto operator()(int a, bool b) const -> Value { return a * b; }
-  auto operator()(bool a, int b) const -> Value { return a * b; }
-  auto operator()(bool a, bool b) const -> Value { return a * b; }
-  auto operator()([[maybe_unused]] int a, [[maybe_unused]] Function b) const
-      -> Value {
-    throw std::runtime_error{"Unsupported operation"};
-  }
-  auto operator()([[maybe_unused]] Function a, [[maybe_unused]] int b) const
-      -> Value {
-    throw std::runtime_error{"Unsupported operation"};
-  }
-  auto operator()([[maybe_unused]] bool a, [[maybe_unused]] Function b) const
-      -> Value {
-    throw std::runtime_error{"Unsupported operation"};
-  }
-  auto operator()([[maybe_unused]] Function a, [[maybe_unused]] bool b) const
-      -> Value {
-    throw std::runtime_error{"Unsupported operation"};
-  }
-  auto operator()([[maybe_unused]] Function a,
-                  [[maybe_unused]] Function b) const -> Value {
-    throw std::runtime_error{"Unsupported operation"};
-  }
-  auto operator()([[maybe_unused]] int a, [[maybe_unused]] std::string b) const
-      -> Value {
-    throw std::runtime_error{"Unsupported operation"};
-  }
-  auto operator()([[maybe_unused]] std::string a, [[maybe_unused]] int b) const
-      -> Value {
-    throw std::runtime_error{"Unsupported operation"};
-  }
-  auto operator()([[maybe_unused]] bool a, [[maybe_unused]] std::string b) const
-      -> Value {
-    throw std::runtime_error{"Unsupported operation"};
-  }
-  auto operator()([[maybe_unused]] std::string a, [[maybe_unused]] bool b) const
-      -> Value {
-    throw std::runtime_error{"Unsupported operation"};
-  }
-  auto operator()([[maybe_unused]] std::string a,
-                  [[maybe_unused]] std::string b) const -> Value {
-    throw std::runtime_error{"Unsupported operation"};
-  }
-  auto operator()([[maybe_unused]] std::string a,
-                  [[maybe_unused]] Function b) const -> Value {
-    throw std::runtime_error{"Unsupported operation"};
-  }
-  auto operator()([[maybe_unused]] Function a,
-                  [[maybe_unused]] std::string b) const -> Value {
-    throw std::runtime_error{"Unsupported operation"};
+struct MultiplyVisitor {
+  auto operator()(auto const& a, auto const& b) const -> Value {
+    using R = std::decay_t<decltype(a)>;
+    auto coerce{Coerce<R>{}};
+    if constexpr (HasMultiplyOperator<decltype(a), decltype(coerce(b))>) {
+      return a * coerce(b);
+    }
+    throw std::runtime_error("Invalid multiplication");
   }
 };
 
 struct GreaterThanVisitor {
-  auto operator()(int a, int b) const -> bool { return a > b; }
-  auto operator()(int a, bool b) const -> bool { return a > b; }
-  auto operator()(bool a, int b) const -> bool { return a > b; }
-  auto operator()(bool a, bool b) const -> bool { return a > b; }
-  auto operator()([[maybe_unused]] int a, [[maybe_unused]] Function b) const
-      -> bool {
-    throw std::runtime_error{"Unsupported operation"};
-  }
-  auto operator()([[maybe_unused]] Function a, [[maybe_unused]] int b) const
-      -> bool {
-    throw std::runtime_error{"Unsupported operation"};
-  }
-  auto operator()([[maybe_unused]] bool a, [[maybe_unused]] Function b) const
-      -> bool {
-    throw std::runtime_error{"Unsupported operation"};
-  }
-  auto operator()([[maybe_unused]] Function a, [[maybe_unused]] bool b) const
-      -> bool {
-    throw std::runtime_error{"Unsupported operation"};
-  }
-  auto operator()([[maybe_unused]] Function a,
-                  [[maybe_unused]] Function b) const -> bool {
-    throw std::runtime_error{"Unsupported operation"};
-  }
-  auto operator()([[maybe_unused]] int a, [[maybe_unused]] std::string b) const
-      -> bool {
-    throw std::runtime_error{"Unsupported operation"};
-  }
-  auto operator()([[maybe_unused]] std::string a, [[maybe_unused]] int b) const
-      -> bool {
-    throw std::runtime_error{"Unsupported operation"};
-  }
-  auto operator()([[maybe_unused]] bool a, [[maybe_unused]] std::string b) const
-      -> bool {
-    throw std::runtime_error{"Unsupported operation"};
-  }
-  auto operator()([[maybe_unused]] std::string a, [[maybe_unused]] bool b) const
-      -> bool {
-    throw std::runtime_error{"Unsupported operation"};
-  }
-  auto operator()([[maybe_unused]] std::string a,
-                  [[maybe_unused]] std::string b) const -> bool {
-    throw std::runtime_error{"Unsupported operation"};
-  }
-  auto operator()([[maybe_unused]] std::string a,
-                  [[maybe_unused]] Function b) const -> bool {
-    throw std::runtime_error{"Unsupported operation"};
-  }
-  auto operator()([[maybe_unused]] Function a,
-                  [[maybe_unused]] std::string b) const -> bool {
-    throw std::runtime_error{"Unsupported operation"};
+  auto operator()(auto const& a, auto const& b) const -> bool {
+    using R = std::decay_t<decltype(a)>;
+    auto coerce{Coerce<R>{}};
+    if constexpr (HasGreaterThanOperator<decltype(a), decltype(coerce(b))>) {
+      return a > coerce(b);
+    }
+    throw std::runtime_error("Invalid comparison");
   }
 };
 
 struct EqualsVisitor {
-  auto operator()(int a, int b) const -> bool { return a == b; }
-  auto operator()(int a, bool b) const -> bool { return a == b; }
-  auto operator()(bool a, int b) const -> bool { return a == b; }
-  auto operator()(bool a, bool b) const -> bool { return a == b; }
-  auto operator()([[maybe_unused]] int a, [[maybe_unused]] Function b) const
-      -> bool {
-    throw std::runtime_error{"Unsupported operation"};
-  }
-  auto operator()([[maybe_unused]] Function a, [[maybe_unused]] int b) const
-      -> bool {
-    throw std::runtime_error{"Unsupported operation"};
-  }
-  auto operator()([[maybe_unused]] bool a, [[maybe_unused]] Function b) const
-      -> bool {
-    throw std::runtime_error{"Unsupported operation"};
-  }
-  auto operator()([[maybe_unused]] Function a, [[maybe_unused]] bool b) const
-      -> bool {
-    throw std::runtime_error{"Unsupported operation"};
-  }
-  auto operator()([[maybe_unused]] Function a,
-                  [[maybe_unused]] Function b) const -> bool {
-    throw std::runtime_error{"Unsupported operation"};
-  }
-  auto operator()([[maybe_unused]] int a, [[maybe_unused]] std::string b) const
-      -> bool {
-    throw std::runtime_error{"Unsupported operation"};
-  }
-  auto operator()([[maybe_unused]] std::string a, [[maybe_unused]] int b) const
-      -> bool {
-    throw std::runtime_error{"Unsupported operation"};
-  }
-  auto operator()([[maybe_unused]] bool a, [[maybe_unused]] std::string b) const
-      -> bool {
-    throw std::runtime_error{"Unsupported operation"};
-  }
-  auto operator()([[maybe_unused]] std::string a, [[maybe_unused]] bool b) const
-      -> bool {
-    throw std::runtime_error{"Unsupported operation"};
-  }
-  auto operator()([[maybe_unused]] std::string a,
-                  [[maybe_unused]] std::string b) const -> bool {
-    throw std::runtime_error{"Unsupported operation"};
-  }
-  auto operator()([[maybe_unused]] std::string a,
-                  [[maybe_unused]] Function b) const -> bool {
-    throw std::runtime_error{"Unsupported operation"};
-  }
-  auto operator()([[maybe_unused]] Function a,
-                  [[maybe_unused]] std::string b) const -> bool {
-    throw std::runtime_error{"Unsupported operation"};
+  auto operator()(auto const& a, auto const& b) const -> bool {
+    using R = std::decay_t<decltype(a)>;
+    auto coerce{Coerce<R>{}};
+    if constexpr (HasEqualsOperator<decltype(a), decltype(coerce(b))>) {
+      return a == coerce(b);
+    }
+    throw std::runtime_error("Invalid comparison");
   }
 };
 
@@ -288,19 +106,23 @@ Value::Value(Function value) : value_(value) {}
 Value::Value(std::string value) : value_(value) {}
 
 auto Value::operator+(const Value& other) const -> Value {
-  return std::visit(PlusVisitor{}, value_, other.value_);
+  static auto visitor{PlusVisitor{}};
+  return std::visit(visitor, value_, other.value_);
 }
 
 auto Value::operator-(const Value& other) const -> Value {
-  return std::visit(MinusVisitor{}, value_, other.value_);
+  static auto visitor{MinusVisitor{}};
+  return std::visit(visitor, value_, other.value_);
 }
 
 auto Value::operator*(const Value& other) const -> Value {
-  return std::visit(MulVisitor{}, value_, other.value_);
+  static auto visitor{MultiplyVisitor{}};
+  return std::visit(visitor, value_, other.value_);
 }
 
 auto Value::operator>(const Value& other) const -> bool {
-  return std::visit(GreaterThanVisitor{}, value_, other.value_);
+  static auto visitor{GreaterThanVisitor{}};
+  return std::visit(visitor, value_, other.value_);
 }
 
 auto Value::operator<(const Value& other) const -> bool {
@@ -308,10 +130,17 @@ auto Value::operator<(const Value& other) const -> bool {
 }
 
 auto Value::operator==(const Value& other) const -> bool {
-  return std::visit(EqualsVisitor{}, value_, other.value_);
+  static auto visitor{EqualsVisitor{}};
+  return std::visit(visitor, value_, other.value_);
+}
+
+Value::operator bool() const {
+  static auto coerce{Coerce<bool>{}};
+  return std::visit(coerce, value_);
 }
 
 auto Value::to_string() const -> std::string {
-  return std::visit(ToStringVisitor{}, value_);
+  static auto visitor{ToStringVisitor{}};
+  return std::visit(visitor, value_);
 }
 }  // namespace ctjs

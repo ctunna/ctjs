@@ -6,6 +6,7 @@
 #include "ctjs/runtime/function.h"
 
 namespace ctjs {
+
 class Value {
  public:
   Value() = default;
@@ -21,9 +22,10 @@ class Value {
   auto operator<(const Value& other) const -> bool;
   auto operator==(const Value& other) const -> bool;
 
+  explicit operator bool() const;
+
   template <typename T>
-  auto coerce() const -> T {
-    // TOOD: Coerce type, don't get
+  auto get() const -> T {
     return std::get<T>(value_);
   }
 
