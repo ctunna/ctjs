@@ -57,9 +57,8 @@ class InterpreterVisitor {
                   std::shared_ptr<Environment> environment) const -> Value;
 
  private:
-  template <typename T>
-  auto visit(T var, EnvironmentPtr environment) const -> Value {
-    return std::visit(*this, var, environment);
+  auto visit(auto variant, EnvironmentPtr environment) const -> Value {
+    return std::visit(*this, variant, environment);
   }
 };
 

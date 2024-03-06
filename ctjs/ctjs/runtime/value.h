@@ -3,7 +3,9 @@
 #include <string>
 #include <variant>
 
+#include "ctjs/runtime/array.h"
 #include "ctjs/runtime/function.h"
+#include "ctjs/runtime/object.h"
 
 namespace ctjs {
 
@@ -12,8 +14,10 @@ class Value {
   Value() = default;
   Value(int value);
   Value(bool value);
-  Value(Function value);
   Value(std::string value);
+  Value(Function value);
+  Value(Object value);
+  Value(Array value);
 
   auto operator+(const Value& other) const -> Value;
   auto operator-(const Value& other) const -> Value;
@@ -32,6 +36,6 @@ class Value {
   auto to_string() const -> std::string;
 
  private:
-  std::variant<int, bool, Function, std::string> value_;
+  std::variant<int, bool, std::string, Function, Object, Array> value_;
 };
 }  // namespace ctjs

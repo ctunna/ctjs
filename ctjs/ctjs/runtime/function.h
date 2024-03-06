@@ -7,7 +7,9 @@
 
 namespace ctjs {
 class Value;
+
 class Environment;
+
 class Function {
  public:
   Function() = default;

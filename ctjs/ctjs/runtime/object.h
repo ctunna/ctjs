@@ -1,11 +1,12 @@
 #pragma once
 
+#include <string>
 #include <string_view>
 #include <unordered_map>
 
-#include "ctjs/runtime/value.h"
-
 namespace ctjs {
+class Value;
+
 class Object {
  public:
   auto get_property(const std::string_view name) const -> Value;

@@ -1,6 +1,11 @@
 #include "ctjs/runtime/value.h"
 
+#include <algorithm>
+
 #include "ctjs/runtime/coerce.h"
+#include "ctjs/util/string/join.h"
+
+namespace string = ctjs::util::string;
 
 namespace ctjs {
 template <typename T, typename U>
@@ -91,19 +96,39 @@ struct ToStringVisitor {
   auto operator()(int value) const -> std::string {
     return std::to_string(value);
   }
+
   auto operator()(bool value) const -> std::string {
     return value ? "true" : "false";
   }
+
   auto operator()([[maybe_unused]] Function value) const -> std::string {
     return "function()";
   }
-  auto operator()(std::string value) const -> std::string { return value; }
+
+  auto operator()(std::string value) const -> std::string {
+    return "\"" + value + "\"";
+  }
+
+  auto operator()([[maybe_unused]] Object value) const -> std::string {
+    return "object";
+  }
+
+  auto operator()(Array value) const -> std::string {
+    std::vector<std::string> strings;
+    std::transform(value.elements().begin(), value.elements().end(),
+                   std::back_inserter(strings),
+                   [](auto const& v) { return v.to_string(); });
+    auto array{string::join(strings.begin(), strings.end(), ", ")};
+    return "[" + array + "]";
+  }
 };
 
 Value::Value(int value) : value_(value) {}
 Value::Value(bool value) : value_(value) {}
-Value::Value(Function value) : value_(value) {}
 Value::Value(std::string value) : value_(value) {}
+Value::Value(Function value) : value_(value) {}
+Value::Value(Object value) : value_(value) {}
+Value::Value(Array value) : value_(value) {}
 
 auto Value::operator+(const Value& other) const -> Value {
   static auto visitor{PlusVisitor{}};

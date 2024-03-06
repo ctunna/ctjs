@@ -89,11 +89,11 @@ auto InterpreterVisitor::operator()(
 auto InterpreterVisitor::operator()(
     std::shared_ptr<ast::ArrayExpression> expression,
     std::shared_ptr<Environment> environment) const -> Value {
-  std::vector<Value> values;
+  Array array;
   for (auto const& element : expression->elements) {
-    values.push_back(visit(element, environment));
+    array.push(visit(element, environment));
   }
-  return Value();
+  return array;
 }
 
 auto InterpreterVisitor::operator()(
