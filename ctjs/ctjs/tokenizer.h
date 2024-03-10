@@ -34,6 +34,8 @@ class Tokenizer {
 
   auto consume_identifier() -> std::string;
 
+  auto consume_line_comment() -> void;
+
   auto is_identifier_char() -> bool;
 
   auto is_alpha() -> bool;
@@ -43,6 +45,8 @@ class Tokenizer {
   auto is_char(char c) -> bool;
 
   auto is_whitespace() -> bool;
+
+  auto is_line_comment() -> bool;
 
   size_t position_{0};
   std::string_view source_;

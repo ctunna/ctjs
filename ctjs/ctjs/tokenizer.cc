@@ -57,6 +57,10 @@ auto Tokenizer::next() -> Token {
     position_++;
   }
 
+  if (is_line_comment()) {
+    consume_line_comment();
+  }
+
   for (const auto &[token, token_type] : keyword_tokens) {
     std::regex re{token + "[^\\w]"};
     std::string str{source_.substr(position_, token.size() + 1)};
@@ -132,6 +136,19 @@ auto Tokenizer::consume_identifier() -> std::string {
   return identifier;
 }
 
+auto Tokenizer::consume_line_comment() -> void {
+  while (is_line_comment()) {
+    position_ += 2;
+    // TODO: Handle CRLF
+    while (!is_char('\n')) {
+      position_++;
+    }
+    while (is_whitespace()) {
+      position_++;
+    }
+  }
+}
+
 auto Tokenizer::is_identifier_char() -> bool {
   return is_alpha() || is_digit() || is_char('_');
 }
@@ -150,6 +167,10 @@ auto Tokenizer::is_char(char c) -> bool { return source_[position_] == c; }
 auto Tokenizer::is_whitespace() -> bool {
   return source_[position_] == ' ' || source_[position_] == '\t' ||
          source_[position_] == '\n';
+}
+
+auto Tokenizer::is_line_comment() -> bool {
+  return source_.substr(position_, 2) == "//";
 }
 
 }  // namespace ctjs
