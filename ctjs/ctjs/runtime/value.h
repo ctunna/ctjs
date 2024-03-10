@@ -1,5 +1,6 @@
 #pragma once
 
+#include <map>
 #include <string>
 #include <variant>
 
@@ -19,12 +20,13 @@ class Value {
   Value(Object value);
   Value(Array value);
 
-  auto operator+(const Value& other) const -> Value;
-  auto operator-(const Value& other) const -> Value;
-  auto operator*(const Value& other) const -> Value;
-  auto operator>(const Value& other) const -> bool;
-  auto operator<(const Value& other) const -> bool;
-  auto operator==(const Value& other) const -> bool;
+  auto operator+(Value const& other) const -> Value;
+  auto operator-(Value const& other) const -> Value;
+  auto operator*(Value const& other) const -> Value;
+  auto operator>(Value const& other) const -> bool;
+  auto operator<(Value const& other) const -> bool;
+  auto operator==(Value const& other) const -> bool;
+  auto operator[](Value const& other) -> Value;
 
   explicit operator bool() const;
 
@@ -32,6 +34,8 @@ class Value {
   auto get() const -> T {
     return std::get<T>(value_);
   }
+
+  auto iterable() -> std::map<std::string, Value>;
 
   auto to_string() const -> std::string;
 

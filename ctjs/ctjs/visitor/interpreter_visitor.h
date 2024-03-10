@@ -9,10 +9,13 @@
 #include "ctjs/ast/block_statement.h"
 #include "ctjs/ast/call_expression.h"
 #include "ctjs/ast/expression_statement.h"
+#include "ctjs/ast/for_in_statement.h"
 #include "ctjs/ast/function_declaration.h"
 #include "ctjs/ast/identifier.h"
 #include "ctjs/ast/if_statement.h"
 #include "ctjs/ast/literal.h"
+#include "ctjs/ast/member_expression.h"
+#include "ctjs/ast/object_expression.h"
 #include "ctjs/ast/program.h"
 #include "ctjs/ast/return_statement.h"
 #include "ctjs/ast/variable_declaration.h"
@@ -34,6 +37,8 @@ class InterpreterVisitor {
                   std::shared_ptr<Environment> environment) const -> Value;
   auto operator()(std::shared_ptr<ast::WhileStatement> statement,
                   std::shared_ptr<Environment> environment) const -> Value;
+  auto operator()(std::shared_ptr<ast::ForInStatement> statement,
+                  std::shared_ptr<Environment> environment) const -> Value;
   auto operator()(std::shared_ptr<ast::ExpressionStatement> statement,
                   std::shared_ptr<Environment> environment) const -> Value;
   auto operator()(std::shared_ptr<ast::VariableDeclaration> decl,
@@ -54,6 +59,10 @@ class InterpreterVisitor {
   auto operator()(std::shared_ptr<ast::Identifier> id,
                   std::shared_ptr<Environment> environment) const -> Value;
   auto operator()(std::shared_ptr<ast::Literal> literal,
+                  std::shared_ptr<Environment> environment) const -> Value;
+  auto operator()(std::shared_ptr<ast::MemberExpression> expression,
+                  std::shared_ptr<Environment> environment) const -> Value;
+  auto operator()(std::shared_ptr<ast::ObjectExpression> expression,
                   std::shared_ptr<Environment> environment) const -> Value;
 
  private:

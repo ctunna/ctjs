@@ -10,6 +10,16 @@
 namespace ctjs {
 class Environment {
  public:
+  Environment() = default;
+
+  explicit Environment(std::shared_ptr<Environment> parent);
+
+  Environment(Environment const&) = default;
+  Environment(Environment&&) = default;
+  auto operator=(Environment const&) -> Environment& = default;
+  auto operator=(Environment&&) -> Environment& = default;
+  ~Environment() = default;
+
   auto get(std::string const& name) const -> Value;
   void set(std::string const& name, Value value);
 
@@ -17,6 +27,7 @@ class Environment {
 
  private:
   std::unordered_map<std::string, Value> scope_;
+  std::shared_ptr<Environment> parent_;
 };
 using EnvironmentPtr = std::variant<std::shared_ptr<Environment>>;
 }  // namespace ctjs

@@ -83,6 +83,17 @@ void PrintVisitor::operator()(
 }
 
 void PrintVisitor::operator()(
+    std::shared_ptr<ast::ForInStatement> statement) const {
+  std::cout << std::string(indent_, ' ') << "ForInStatement(\n";
+  std::visit(PrintVisitor{indent_ + 2}, statement->left);
+  std::cout << ",\n";
+  std::visit(PrintVisitor{indent_ + 2}, statement->right);
+  std::cout << ",\n";
+  std::visit(PrintVisitor{indent_ + 2}, statement->body);
+  std::cout << "\n" << std::string(indent_, ' ') << ")";
+}
+
+void PrintVisitor::operator()(
     std::shared_ptr<ast::FunctionDeclaration> decl) const {
   std::cout << std::string(indent_, ' ') << "FunctionDeclaration(\n";
   std::visit(PrintVisitor{indent_ + 2}, decl->id);
@@ -150,5 +161,26 @@ void PrintVisitor::operator()(std::shared_ptr<ast::Identifier> id) const {
 void PrintVisitor::operator()(std::shared_ptr<ast::Literal> literal) const {
   std::cout << std::string(indent_, ' ') << "Literal("
             << literal->value.to_string() << ")";
+}
+
+void PrintVisitor::operator()(
+    std::shared_ptr<ast::MemberExpression> expression) const {
+  std::cout << std::string(indent_, ' ') << "MemberExpression(\n";
+  std::visit(PrintVisitor{indent_ + 2}, expression->object);
+  std::cout << ",\n";
+  std::visit(PrintVisitor{indent_ + 2}, expression->property);
+  std::cout << "\n" << std::string(indent_, ' ') << ")";
+}
+
+void PrintVisitor::operator()(
+    std::shared_ptr<ast::ObjectExpression> expression) const {
+  std::cout << std::string(indent_, ' ') << "ObjectExpression([\n";
+  for (auto& prop : expression->properties) {
+    std::visit(PrintVisitor{indent_ + 2}, prop.key);
+    std::cout << ": ";
+    std::visit(PrintVisitor{0}, prop.value);
+    std::cout << "\n";
+  }
+  std::cout << std::string(indent_, ' ') << "])";
 }
 }  // namespace ctjs

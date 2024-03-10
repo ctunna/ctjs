@@ -7,5 +7,12 @@ auto Array::push(Value value) -> void { elements_.push_back(value); }
 
 auto Array::operator[](int index) -> Value& { return elements_[index]; }
 
-auto Array::elements() const -> const std::vector<Value>& { return elements_; }
+auto Array::size() const -> size_t { return elements_.size(); }
+
+auto Array::begin() -> std::vector<Value>::iterator {
+  return elements_.begin();
+}
+
+auto Array::end() -> std::vector<Value>::iterator { return elements_.end(); }
+
 }  // namespace ctjs

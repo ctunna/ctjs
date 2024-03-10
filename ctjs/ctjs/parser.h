@@ -7,10 +7,12 @@
 #include "ctjs/ast/array_expression.h"
 #include "ctjs/ast/block_statement.h"
 #include "ctjs/ast/expression_statement.h"
+#include "ctjs/ast/for_in_statement.h"
 #include "ctjs/ast/function_declaration.h"
 #include "ctjs/ast/identifier.h"
 #include "ctjs/ast/if_statement.h"
 #include "ctjs/ast/literal.h"
+#include "ctjs/ast/object_expression.h"
 #include "ctjs/ast/position.h"
 #include "ctjs/ast/program.h"
 #include "ctjs/ast/return_statement.h"
@@ -49,6 +51,8 @@ class Parser {
 
   auto parse_while_statement() -> std::shared_ptr<ast::WhileStatement>;
 
+  auto parse_for_in_statement() -> std::shared_ptr<ast::ForInStatement>;
+
   auto parse_expression_statement()
       -> std::shared_ptr<ast::ExpressionStatement>;
 
@@ -71,6 +75,11 @@ class Parser {
       -> std::optional<std::shared_ptr<ast::ArrayExpression>>;
 
   auto parse_array_expression() -> std::shared_ptr<ast::ArrayExpression>;
+
+  auto optional_parse_object_expression()
+      -> std::optional<std::shared_ptr<ast::ObjectExpression>>;
+
+  auto parse_object_expression() -> std::shared_ptr<ast::ObjectExpression>;
 
   auto parse_expression() -> ast::ExpressionPtr;
 

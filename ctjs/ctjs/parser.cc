@@ -6,6 +6,7 @@
 #include "ctjs/ast/binary_expression.h"
 #include "ctjs/ast/call_expression.h"
 #include "ctjs/ast/identifier.h"
+#include "ctjs/ast/member_expression.h"
 
 using ctjs::ast::BinaryOperator;
 using ctjs::ast::TokenType;
@@ -75,6 +76,8 @@ auto Parser::parse_statement() -> ast::StatementPtr {
       return parse_block_statement();
     case TokenType::While:
       return parse_while_statement();
+    case TokenType::For:
+      return parse_for_in_statement();
     case TokenType::Function:
       return parse_function_declaration();
     case TokenType::Return:
@@ -133,6 +136,19 @@ auto Parser::parse_while_statement() -> std::shared_ptr<ast::WhileStatement> {
                                                body);
 }
 
+auto Parser::parse_for_in_statement() -> std::shared_ptr<ast::ForInStatement> {
+  consume_token(TokenType::For);
+  consume_token(TokenType::ParenOpen);
+  consume_token(TokenType::Var);
+  auto left{parse_identifier()};
+  consume_token(TokenType::In);
+  auto right{parse_expression()};
+  consume_token(TokenType::ParenClose);
+  auto body{parse_statement()};
+  return std::make_shared<ast::ForInStatement>(file_name_, location_, left,
+                                               right, body);
+}
+
 auto Parser::parse_block_statement() -> std::shared_ptr<ast::BlockStatement> {
   consume_token(TokenType::CurlyOpen);
   std::vector<ast::StatementPtr> statements;
@@ -164,6 +180,7 @@ auto Parser::parse_variable_declaration()
     -> std::shared_ptr<ast::VariableDeclaration> {
   consume_token(TokenType::Var);
   auto identifier{parse_identifier()};
+  // TODO: Assignment is optional.
   consume_token(TokenType::Equals);
   auto expression{parse_expression()};
   consume_token(TokenType::Semicolon);
@@ -234,7 +251,34 @@ auto Parser::parse_array_expression() -> std::shared_ptr<ast::ArrayExpression> {
     }
   }
   consume_token(TokenType::BracketClose);
-  return std::make_shared<ast::ArrayExpression>(file_name_, location_, elements);
+  return std::make_shared<ast::ArrayExpression>(file_name_, location_,
+                                                elements);
+}
+
+auto Parser::optional_parse_object_expression()
+    -> std::optional<std::shared_ptr<ast::ObjectExpression>> {
+  if (!expect_token(TokenType::CurlyOpen)) {
+    return {};
+  }
+  return parse_object_expression();
+}
+
+auto Parser::parse_object_expression()
+    -> std::shared_ptr<ast::ObjectExpression> {
+  consume_token(TokenType::CurlyOpen);
+  std::vector<ast::Property> properties;
+  while (!expect_token(TokenType::CurlyClose)) {
+    auto key{parse_identifier()};
+    consume_token(TokenType::Colon);
+    auto value{parse_expression()};
+    properties.emplace_back(key, value);
+    if (expect_token(TokenType::Comma)) {
+      consume_token(TokenType::Comma);
+    }
+  }
+  consume_token(TokenType::CurlyClose);
+  return std::make_shared<ast::ObjectExpression>(file_name_, location_,
+                                                 properties);
 }
 
 auto Parser::parse_expression() -> ast::ExpressionPtr {
@@ -260,8 +304,20 @@ auto Parser::parse_expression() -> ast::ExpressionPtr {
                                                           *optional_expr, args);
   }
 
+  if (optional_expr && expect_token(TokenType::BracketOpen)) {
+    consume_token(TokenType::BracketOpen);
+    auto literal{parse_expression()};
+    consume_token(TokenType::BracketClose);
+    optional_expr = std::make_shared<ast::MemberExpression>(
+        file_name_, location_, *optional_expr, literal);
+  }
+
   if (!optional_expr) {
     optional_expr = optional_parse_array_expression();
+  }
+
+  if (!optional_expr) {
+    optional_expr = optional_parse_object_expression();
   }
 
   if (!optional_expr) {

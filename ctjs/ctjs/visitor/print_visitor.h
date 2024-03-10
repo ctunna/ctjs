@@ -8,10 +8,13 @@
 #include "ctjs/ast/block_statement.h"
 #include "ctjs/ast/call_expression.h"
 #include "ctjs/ast/expression_statement.h"
+#include "ctjs/ast/for_in_statement.h"
 #include "ctjs/ast/function_declaration.h"
 #include "ctjs/ast/identifier.h"
 #include "ctjs/ast/if_statement.h"
 #include "ctjs/ast/literal.h"
+#include "ctjs/ast/member_expression.h"
+#include "ctjs/ast/object_expression.h"
 #include "ctjs/ast/program.h"
 #include "ctjs/ast/return_statement.h"
 #include "ctjs/ast/variable_declaration.h"
@@ -28,6 +31,7 @@ class PrintVisitor {
   void operator()(std::shared_ptr<ast::ReturnStatement> statement) const;
   void operator()(std::shared_ptr<ast::IfStatement> statement) const;
   void operator()(std::shared_ptr<ast::WhileStatement> statement) const;
+  void operator()(std::shared_ptr<ast::ForInStatement> statement) const;
   void operator()(std::shared_ptr<ast::ExpressionStatement> statement) const;
   void operator()(std::shared_ptr<ast::VariableDeclaration> decl) const;
   void operator()(std::shared_ptr<ast::VariableDeclarator> decl) const;
@@ -39,6 +43,8 @@ class PrintVisitor {
   void operator()(std::shared_ptr<ast::CallExpression> expression) const;
   void operator()(std::shared_ptr<ast::Identifier> id) const;
   void operator()(std::shared_ptr<ast::Literal> literal) const;
+  void operator()(std::shared_ptr<ast::MemberExpression> expression) const;
+  void operator()(std::shared_ptr<ast::ObjectExpression> expression) const;
 
  private:
   int indent_{};

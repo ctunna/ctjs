@@ -72,6 +72,18 @@ auto InterpreterVisitor::operator()(
 }
 
 auto InterpreterVisitor::operator()(
+    std::shared_ptr<ast::ForInStatement> statement,
+    std::shared_ptr<Environment> environment) const -> Value {
+  auto iterable{visit(statement->right, environment)};
+  for (auto const& [key, value] : iterable.iterable()) {
+    auto id{std::get<std::shared_ptr<ast::Identifier>>(statement->left)};
+    environment->set(id->name, key);
+    visit(statement->body, environment);
+  }
+  return Value();
+}
+
+auto InterpreterVisitor::operator()(
     std::shared_ptr<ast::FunctionDeclaration> decl,
     std::shared_ptr<Environment> environment) const -> Value {
   Function function{decl, environment};
@@ -153,6 +165,26 @@ auto InterpreterVisitor::operator()(
     std::shared_ptr<ast::Literal> literal,
     [[maybe_unused]] std::shared_ptr<Environment> environment) const -> Value {
   return literal->value;
+}
+
+auto InterpreterVisitor::operator()(
+    std::shared_ptr<ast::MemberExpression> expression,
+    std::shared_ptr<Environment> environment) const -> Value {
+  auto object{visit(expression->object, environment)};
+  auto property{visit(expression->property, environment)};
+  return object[property];
+}
+
+auto InterpreterVisitor::operator()(
+    std::shared_ptr<ast::ObjectExpression> expression,
+    std::shared_ptr<Environment> environment) const -> Value {
+  Object object;
+  for (auto& prop : expression->properties) {
+    auto key{std::get<std::shared_ptr<ast::Identifier>>(prop.key)};
+    auto value{visit(prop.value, environment)};
+    object.set_property(key->name, value);
+  }
+  return object;
 }
 
 }  // namespace ctjs

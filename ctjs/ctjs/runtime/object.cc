@@ -24,8 +24,16 @@ auto Object::has_property(const std::string_view name) const -> bool {
 }
 
 auto Object::properties() const
-    -> const std::unordered_map<std::string, Value>& {
+    -> std::map<std::string, Value> const& {
   return properties_;
+}
+
+auto Object::begin() -> std::map<std::string, Value>::iterator {
+  return properties_.begin();
+}
+
+auto Object::end() -> std::map<std::string, Value>::iterator {
+  return properties_.end();
 }
 
 }  // namespace ctjs

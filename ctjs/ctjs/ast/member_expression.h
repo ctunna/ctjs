@@ -2,19 +2,19 @@
 
 #include <memory>
 #include <string>
-#include <vector>
 
 #include "ctjs/ast/expression.h"
 #include "ctjs/ast/source_location.h"
 
 namespace ctjs::ast {
-class ArrayExpression {
+class MemberExpression {
  public:
-  ArrayExpression(std::string file_name, SourceLocation loc,
-                  std::vector<ExpressionPtr> elements);
+  MemberExpression(std::string file_name, SourceLocation loc,
+                   ExpressionPtr object, ExpressionPtr literal);
 
   std::string const file_name;
   SourceLocation const loc;
-  std::vector<ExpressionPtr> const elements;
+  ExpressionPtr const object;
+  ExpressionPtr const property;
 };
 }  // namespace ctjs::ast
