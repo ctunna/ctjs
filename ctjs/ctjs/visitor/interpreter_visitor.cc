@@ -18,8 +18,9 @@ auto InterpreterVisitor::operator()(
 auto InterpreterVisitor::operator()(
     std::shared_ptr<ast::BlockStatement> statement,
     std::shared_ptr<Environment> environment) const -> Value {
+  auto env{std::make_shared<Environment>(environment)};
   for (auto& stmt : statement->body) {
-    visit(stmt, environment);
+    visit(stmt, env);
   }
   return Value();
 }
@@ -46,7 +47,7 @@ auto InterpreterVisitor::operator()(
     std::shared_ptr<Environment> environment) const -> Value {
   auto value{visit(decl->init, environment)};
   auto id{std::get<std::shared_ptr<ast::Identifier>>(decl->id)};
-  environment->set(id->name, value);
+  environment->define(id->name, value);
   return value;
 }
 
@@ -75,10 +76,11 @@ auto InterpreterVisitor::operator()(
     std::shared_ptr<ast::ForInStatement> statement,
     std::shared_ptr<Environment> environment) const -> Value {
   auto iterable{visit(statement->right, environment)};
+  auto env{std::make_shared<Environment>(environment)};
   for (auto const& [key, value] : iterable.iterable()) {
     auto id{std::get<std::shared_ptr<ast::Identifier>>(statement->left)};
-    environment->set(id->name, key);
-    visit(statement->body, environment);
+    env->define(id->name, key);
+    visit(statement->body, env);
   }
   return Value();
 }
@@ -88,7 +90,7 @@ auto InterpreterVisitor::operator()(
     std::shared_ptr<Environment> environment) const -> Value {
   Function function{decl, environment};
   auto id{std::get<std::shared_ptr<ast::Identifier>>(decl->id)};
-  environment->set(id->name, function);
+  environment->define(id->name, function);
   return function;
 }
 

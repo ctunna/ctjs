@@ -16,8 +16,18 @@ auto Environment::get(std::string const& name) const -> Value {
   return Value();
 }
 
-void Environment::set(std::string const& name, Value value) {
+void Environment::define(std::string const& name, Value value) {
   scope_.insert_or_assign(name, value);
+}
+
+void Environment::set(std::string const& name, Value value) {
+  if (scope_.contains(name)) {
+    scope_.insert_or_assign(name, value);
+  } else if (parent_) {
+    parent_->set(name, value);
+  } else {
+    throw std::runtime_error("Undefined variable: " + name);
+  }
 }
 
 void Environment::to_string() {

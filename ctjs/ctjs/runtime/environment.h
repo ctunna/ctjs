@@ -20,6 +20,7 @@ class Environment {
   auto operator=(Environment&&) -> Environment& = default;
   ~Environment() = default;
 
+  void define(std::string const& name, Value value);
   auto get(std::string const& name) const -> Value;
   void set(std::string const& name, Value value);
 
