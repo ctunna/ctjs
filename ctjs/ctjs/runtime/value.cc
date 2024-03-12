@@ -132,19 +132,15 @@ struct ToStringVisitor {
   auto operator()(int value) const -> std::string {
     return std::to_string(value);
   }
-
   auto operator()(bool value) const -> std::string {
     return value ? "true" : "false";
   }
-
   auto operator()([[maybe_unused]] Function value) const -> std::string {
     return "function()";
   }
-
   auto operator()(std::string value) const -> std::string {
     return "\"" + value + "\"";
   }
-
   auto operator()(Object value) const -> std::string {
     std::vector<std::string> strings;
     std::transform(value.begin(), value.end(), std::back_inserter(strings),
@@ -154,7 +150,6 @@ struct ToStringVisitor {
     auto object{string::join(strings.begin(), strings.end(), ", ")};
     return "{" + object + "}";
   }
-
   auto operator()(Array value) const -> std::string {
     std::vector<std::string> strings;
     std::transform(value.begin(), value.end(), std::back_inserter(strings),
