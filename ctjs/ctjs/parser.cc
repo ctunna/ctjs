@@ -328,6 +328,10 @@ auto Parser::parse_expression() -> ast::ExpressionPtr {
     optional_expr = optional_parse_string_literal();
   }
 
+  if (!optional_expr) {
+    throw std::runtime_error("Unknown expression");
+  }
+
   auto expr{*optional_expr};
   auto next{tokenizer_.peek()};
   if (is_binary_operator(next.type)) {

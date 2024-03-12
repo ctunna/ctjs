@@ -1,6 +1,7 @@
 #pragma once
 
 #include <string>
+#include <vector>
 
 #include "ctjs/ast/identifier.h"
 #include "ctjs/ast/expression.h"
