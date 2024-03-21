@@ -13,12 +13,12 @@ class Environment;
 
 class Function : public Object {
  public:
-  Function() = default;
-
   Function(std::weak_ptr<ast::FunctionDeclaration> declaration,
            std::weak_ptr<Environment> closure);
 
   Value call(std::vector<Value> args);
+
+  auto to_string() const -> std::string override;
 
  private:
   std::weak_ptr<ast::FunctionDeclaration> declaration_;

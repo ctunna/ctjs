@@ -19,7 +19,7 @@ class Object {
   auto begin() -> std::map<std::string, Value>::iterator;
   auto end() -> std::map<std::string, Value>::iterator;
 
-  auto to_string() const -> std::string;
+  virtual auto to_string() const -> std::string;
 
  private:
   std::map<std::string, Value> properties_;

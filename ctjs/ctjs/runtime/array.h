@@ -12,7 +12,7 @@ class Array : public Object {
   auto push(Value value) -> void;
   auto operator[](const size_t index) -> Value;
   auto size() const -> size_t;
-  auto to_string() const -> std::string;
+  auto to_string() const -> std::string override;
 
  private:
   size_t size_;

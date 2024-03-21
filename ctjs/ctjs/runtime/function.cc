@@ -18,10 +18,13 @@ Value Function::call(std::vector<Value> args) {
         auto id{std::get<std::shared_ptr<ast::Identifier>>(params[i])};
         environment->define(id->name, i < args.size() ? args[i] : Value());
       }
-      return std::visit(InterpreterVisitor{}, decl->body, EnvironmentPtr{environment});
+      return std::visit(InterpreterVisitor{}, decl->body,
+                        EnvironmentPtr{environment});
     }
     throw std::runtime_error("Function closure has been deleted");
   }
   throw std::runtime_error("Function declaration has been deleted");
 }
+
+auto Function::to_string() const -> std::string { return "[Function]"; }
 }  // namespace ctjs
