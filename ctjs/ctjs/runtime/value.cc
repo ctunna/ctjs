@@ -4,9 +4,7 @@
 
 #include "ctjs/runtime/coerce.h"
 #include "ctjs/util/ranges/keys_view.h"
-#include "ctjs/util/string/join.h"
 
-namespace string = ctjs::util::string;
 namespace ranges = ctjs::util::ranges;
 
 namespace ctjs {
@@ -95,16 +93,13 @@ struct EqualsVisitor {
 };
 
 struct IndexVisitor {
-  auto operator()(Object& a, std::string const& b) const -> Value {
-    return a.get_property(b);
+  auto operator()(std::shared_ptr<Object>& a, std::string const& b) const
+      -> Value {
+    return a->get_property(b);
   }
-  auto operator()(Object& a, int const& b) const -> Value {
-    return a.get_property(std::to_string(b));
+  auto operator()(std::shared_ptr<Object>& a, int const& b) const -> Value {
+    return a->get_property(std::to_string(b));
   }
-  auto operator()(Array& a, std::string const& b) const -> Value {
-    return a[std::stoi(b)];
-  }
-  auto operator()(Array& a, int const& b) const -> Value { return a[b]; }
   auto operator()([[maybe_unused]] auto& a, [[maybe_unused]] auto& b) const
       -> Value {
     throw std::runtime_error("Invalid index operation");
@@ -112,15 +107,9 @@ struct IndexVisitor {
 };
 
 struct IterableVisitor {
-  auto operator()(Object& value) const -> std::map<std::string, Value> {
-    return value.properties();
-  }
-  auto operator()(Array& value) const -> std::map<std::string, Value> {
-    std::map<std::string, Value> result;
-    for (size_t i = 0; i < value.size(); ++i) {
-      result[std::to_string(i)] = value[i];
-    }
-    return result;
+  auto operator()(std::shared_ptr<Object>& value) const
+      -> std::map<std::string, Value> {
+    return value->properties();
   }
   auto operator()([[maybe_unused]] auto& value) const
       -> std::map<std::string, Value> {
@@ -129,42 +118,24 @@ struct IterableVisitor {
 };
 
 struct ToStringVisitor {
-  auto operator()(int value) const -> std::string {
+  auto operator()(int const& value) const -> std::string {
     return std::to_string(value);
   }
-  auto operator()(bool value) const -> std::string {
+  auto operator()(bool const& value) const -> std::string {
     return value ? "true" : "false";
   }
-  auto operator()([[maybe_unused]] Function value) const -> std::string {
-    return "function()";
-  }
-  auto operator()(std::string value) const -> std::string {
+  auto operator()(std::string const& value) const -> std::string {
     return "\"" + value + "\"";
   }
-  auto operator()(Object value) const -> std::string {
-    std::vector<std::string> strings;
-    std::transform(value.begin(), value.end(), std::back_inserter(strings),
-                   [](auto const& pair) {
-                     return pair.first + ": " + pair.second.to_string();
-                   });
-    auto object{string::join(strings.begin(), strings.end(), ", ")};
-    return "{" + object + "}";
-  }
-  auto operator()(Array value) const -> std::string {
-    std::vector<std::string> strings;
-    std::transform(value.begin(), value.end(), std::back_inserter(strings),
-                   [](auto const& v) { return v.to_string(); });
-    auto array{string::join(strings.begin(), strings.end(), ", ")};
-    return "[" + array + "]";
+  auto operator()(std::shared_ptr<Object> const& value) const -> std::string {
+    return value->to_string();
   }
 };
 
 Value::Value(int value) : value_(value) {}
 Value::Value(bool value) : value_(value) {}
 Value::Value(std::string value) : value_(value) {}
-Value::Value(Function value) : value_(value) {}
-Value::Value(Object value) : value_(value) {}
-Value::Value(Array value) : value_(value) {}
+Value::Value(std::shared_ptr<Object> value) : value_(std::move(value)) {}
 
 auto Value::operator+(Value const& other) const -> Value {
   static auto visitor{PlusVisitor{}};
@@ -203,11 +174,6 @@ auto Value::operator[](Value const& other) -> Value {
 Value::operator bool() const {
   static auto coerce{Coerce<bool>{}};
   return std::visit(coerce, value_);
-}
-
-auto Value::iterable() -> std::map<std::string, Value> {
-  static auto visitor{IterableVisitor{}};
-  return std::visit(visitor, value_);
 }
 
 auto Value::to_string() const -> std::string {

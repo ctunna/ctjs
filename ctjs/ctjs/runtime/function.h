@@ -4,13 +4,14 @@
 #include <vector>
 
 #include "ctjs/ast/function_declaration.h"
+#include "ctjs/runtime/object.h"
 
 namespace ctjs {
 class Value;
 
 class Environment;
 
-class Function {
+class Function : public Object {
  public:
   Function() = default;
 

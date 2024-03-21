@@ -75,9 +75,10 @@ auto InterpreterVisitor::operator()(
 auto InterpreterVisitor::operator()(
     std::shared_ptr<ast::ForInStatement> statement,
     std::shared_ptr<Environment> environment) const -> Value {
-  auto iterable{visit(statement->right, environment)};
+  auto value{visit(statement->right, environment)};
+  auto obj{value.get<std::shared_ptr<Object>>()};
   auto env{std::make_shared<Environment>(environment)};
-  for (auto const& [key, value] : iterable.iterable()) {
+  for (auto const& [key, value] : obj->properties()) {
     auto id{std::get<std::shared_ptr<ast::Identifier>>(statement->left)};
     env->define(id->name, key);
     visit(statement->body, env);
@@ -88,7 +89,8 @@ auto InterpreterVisitor::operator()(
 auto InterpreterVisitor::operator()(
     std::shared_ptr<ast::FunctionDeclaration> decl,
     std::shared_ptr<Environment> environment) const -> Value {
-  Function function{decl, environment};
+  std::shared_ptr<Object> function{
+      std::make_shared<Function>(decl, environment)};
   auto id{std::get<std::shared_ptr<ast::Identifier>>(decl->id)};
   environment->define(id->name, function);
   return function;
@@ -103,11 +105,11 @@ auto InterpreterVisitor::operator()(
 auto InterpreterVisitor::operator()(
     std::shared_ptr<ast::ArrayExpression> expression,
     std::shared_ptr<Environment> environment) const -> Value {
-  Array array;
+  auto array{std::make_shared<Array>()};
   for (auto const& element : expression->elements) {
-    array.push(visit(element, environment));
+    array->push(visit(element, environment));
   }
-  return array;
+  return Value(array);
 }
 
 auto InterpreterVisitor::operator()(
@@ -145,13 +147,15 @@ auto InterpreterVisitor::operator()(
 auto InterpreterVisitor::operator()(
     std::shared_ptr<ast::CallExpression> expression,
     std::shared_ptr<Environment> environment) const -> Value {
-  auto callee{visit(expression->callee, environment).get<Function>()};
+  auto expr{visit(expression->callee, environment)};
+  auto obj{expr.get<std::shared_ptr<Object>>()};
+  auto callee{std::dynamic_pointer_cast<Function>(obj)};
   std::vector<Value> args;
   for (auto& arg : expression->arguments) {
     args.push_back(visit(arg, environment));
   }
   try {
-    return callee.call(args);
+    return callee->call(args);
   } catch (ReturnException& e) {
     return e.value();
   }
@@ -180,13 +184,13 @@ auto InterpreterVisitor::operator()(
 auto InterpreterVisitor::operator()(
     std::shared_ptr<ast::ObjectExpression> expression,
     std::shared_ptr<Environment> environment) const -> Value {
-  Object object;
+  auto object{std::make_shared<Object>()};
   for (auto& prop : expression->properties) {
     auto key{std::get<std::shared_ptr<ast::Identifier>>(prop.key)};
     auto value{visit(prop.value, environment)};
-    object.set_property(key->name, value);
+    object->set_property(key->name, value);
   }
-  return object;
+  return Value(object);
 }
 
 }  // namespace ctjs

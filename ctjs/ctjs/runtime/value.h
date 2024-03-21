@@ -16,9 +16,7 @@ class Value {
   Value(int value);
   Value(bool value);
   Value(std::string value);
-  Value(Function value);
-  Value(Object value);
-  Value(Array value);
+  Value(std::shared_ptr<Object> value);
 
   auto operator+(Value const& other) const -> Value;
   auto operator-(Value const& other) const -> Value;
@@ -35,11 +33,9 @@ class Value {
     return std::get<T>(value_);
   }
 
-  auto iterable() -> std::map<std::string, Value>;
-
   auto to_string() const -> std::string;
 
  private:
-  std::variant<int, bool, std::string, Function, Object, Array> value_;
+  std::variant<int, bool, std::string, std::shared_ptr<Object>> value_;
 };
 }  // namespace ctjs

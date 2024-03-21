@@ -17,12 +17,8 @@ struct Coerce {
       return value != 0;
     } else if constexpr (std::is_same_v<T, std::string>) {
       return std::to_string(value);
-    } else if constexpr (std::is_same_v<T, Function>) {
-      throw std::runtime_error("Cannot coerce function to int");
-    } else if constexpr (std::is_same_v<T, Object>) {
+    } else if constexpr (std::is_same_v<T, std::shared_ptr<Object>>) {
       throw std::runtime_error("Cannot coerce object to int");
-    } else if constexpr (std::is_same_v<T, Array>) {
-      throw std::runtime_error("Cannot coerce array to int");
     }
     throw std::runtime_error("Invalid coercion");
   }
@@ -34,12 +30,8 @@ struct Coerce {
       return value;
     } else if constexpr (std::is_same_v<T, std::string>) {
       return value ? "true" : "false";
-    } else if constexpr (std::is_same_v<T, Function>) {
-      throw std::runtime_error("Cannot coerce function to bool");
-    } else if constexpr (std::is_same_v<T, Object>) {
+    } else if constexpr (std::is_same_v<T, std::shared_ptr<Object>>) {
       throw std::runtime_error("Cannot coerce object to bool");
-    } else if constexpr (std::is_same_v<T, Array>) {
-      throw std::runtime_error("Cannot coerce array to bool");
     }
     throw std::runtime_error("Invalid coercion");
   }
@@ -54,62 +46,20 @@ struct Coerce {
       throw std::runtime_error("Cannot coerce string to bool");
     } else if constexpr (std::is_same_v<T, std::string>) {
       return value;
-    } else if constexpr (std::is_same_v<T, Function>) {
-      throw std::runtime_error("Cannot coerce string to function");
-    } else if constexpr (std::is_same_v<T, Object>) {
+    } else if constexpr (std::is_same_v<T, std::shared_ptr<Object>>) {
       throw std::runtime_error("Cannot coerce string to object");
-    } else if constexpr (std::is_same_v<T, Array>) {
-      throw std::runtime_error("Cannot coerce string to array");
     }
     throw std::runtime_error("Invalid coercion");
   }
 
-  auto operator()(Function const& value) const -> T {
-    if constexpr (std::is_same_v<T, int>) {
-      throw std::runtime_error("Cannot coerce function to int");
-    } else if constexpr (std::is_same_v<T, bool>) {
-      return true;
-    } else if constexpr (std::is_same_v<T, std::string>) {
-      return "function";
-    } else if constexpr (std::is_same_v<T, Function>) {
-      return value;
-    } else if constexpr (std::is_same_v<T, Object>) {
-      throw std::runtime_error("Cannot coerce function to object");
-    } else if constexpr (std::is_same_v<T, Array>) {
-      throw std::runtime_error("Cannot coerce function to array");
-    }
-    throw std::runtime_error("Invalid coercion");
-  }
-
-  auto operator()(Object const& value) const -> T {
+  auto operator()(std::shared_ptr<Object> const& value) const -> T {
     if constexpr (std::is_same_v<T, int>) {
       throw std::runtime_error("Cannot coerce object to int");
     } else if constexpr (std::is_same_v<T, bool>) {
       return true;
     } else if constexpr (std::is_same_v<T, std::string>) {
       return "object";
-    } else if constexpr (std::is_same_v<T, Function>) {
-      throw std::runtime_error("Cannot coerce object to function");
-    } else if constexpr (std::is_same_v<T, Object>) {
-      return value;
-    } else if constexpr (std::is_same_v<T, Array>) {
-      throw std::runtime_error("Cannot coerce object to array");
-    }
-    throw std::runtime_error("Invalid coercion");
-  }
-
-  auto operator()(Array const& value) const -> T {
-    if constexpr (std::is_same_v<T, int>) {
-      throw std::runtime_error("Cannot coerce array to int");
-    } else if constexpr (std::is_same_v<T, bool>) {
-      return true;
-    } else if constexpr (std::is_same_v<T, std::string>) {
-      return "array";
-    } else if constexpr (std::is_same_v<T, Function>) {
-      throw std::runtime_error("Cannot coerce array to function");
-    } else if constexpr (std::is_same_v<T, Object>) {
-      throw std::runtime_error("Cannot coerce array to object");
-    } else if constexpr (std::is_same_v<T, Array>) {
+    } else if constexpr (std::is_same_v<T, std::shared_ptr<Object>>) {
       return value;
     }
     throw std::runtime_error("Invalid coercion");

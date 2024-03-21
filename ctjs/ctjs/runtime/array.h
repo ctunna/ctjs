@@ -2,20 +2,19 @@
 
 #include <vector>
 
+#include "object.h"
+
 namespace ctjs {
 class Value;
 
-class Array {
+class Array : public Object {
  public:
-  void push(Value value);
-  auto operator[](int index) -> Value&;
-
+  auto push(Value value) -> void;
+  auto operator[](const size_t index) -> Value;
   auto size() const -> size_t;
-
-  auto begin() -> std::vector<Value>::iterator;
-  auto end() -> std::vector<Value>::iterator;
+  auto to_string() const -> std::string;
 
  private:
-  std::vector<Value> elements_;
+  size_t size_;
 };
 }  // namespace ctjs
