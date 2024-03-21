@@ -5,6 +5,17 @@
   "version": "0.2.0",
   "configurations": [
     {
+      "name": "Debug GDB",
+      "type": "cppdbg",
+      "cwd": "${workspaceFolder}/build/",
+      "request": "launch",
+      "MIMode": "gdb",
+      "program": "${workspaceFolder}/build/ctjs",
+      "args": [
+        "index.js"
+      ],
+    },
+    {
       "name": "Debug",
       "type": "cppdbg",
       "cwd": "${workspaceFolder}/build/",
