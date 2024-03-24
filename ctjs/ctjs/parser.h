@@ -4,24 +4,10 @@
 #include <optional>
 #include <string_view>
 
-#include "ctjs/ast/array_expression.h"
-#include "ctjs/ast/block_statement.h"
-#include "ctjs/ast/expression_statement.h"
-#include "ctjs/ast/for_in_statement.h"
-#include "ctjs/ast/function_declaration.h"
-#include "ctjs/ast/identifier.h"
-#include "ctjs/ast/if_statement.h"
-#include "ctjs/ast/literal.h"
-#include "ctjs/ast/object_expression.h"
-#include "ctjs/ast/position.h"
-#include "ctjs/ast/program.h"
-#include "ctjs/ast/return_statement.h"
-#include "ctjs/ast/source_location.h"
-#include "ctjs/ast/statement.h"
-#include "ctjs/ast/variable_declaration.h"
-#include "ctjs/ast/while_statement.h"
+#include "ctjs/ast/ast.h"
 #include "ctjs/token.h"
 #include "ctjs/tokenizer.h"
+#include "ctjs/util/box.h"
 
 namespace ctjs {
 class Parser {
@@ -32,56 +18,52 @@ class Parser {
   Parser &operator=(const Parser &) = delete;
   Parser &operator=(Parser &&) = delete;
 
-  auto parse() -> std::shared_ptr<ast::Program>;
+  auto parse() -> util::Box<ast::Program>;
 
  private:
-  auto parse_statement() -> ast::StatementPtr;
+  auto parse_statement() -> ast::Statement;
 
-  auto parse_return_statement() -> std::shared_ptr<ast::ReturnStatement>;
+  auto parse_return_statement() -> util::Box<ast::ReturnStatement>;
 
-  auto parse_variable_declaration()
-      -> std::shared_ptr<ast::VariableDeclaration>;
+  auto parse_variable_declaration() -> util::Box<ast::VariableDeclaration>;
 
-  auto parse_function_declaration()
-      -> std::shared_ptr<ast::FunctionDeclaration>;
+  auto parse_function_declaration() -> util::Box<ast::FunctionDeclaration>;
 
-  auto parse_block_statement() -> std::shared_ptr<ast::BlockStatement>;
+  auto parse_block_statement() -> util::Box<ast::BlockStatement>;
 
-  auto parse_if_statement() -> std::shared_ptr<ast::IfStatement>;
+  auto parse_if_statement() -> util::Box<ast::IfStatement>;
 
-  auto parse_while_statement() -> std::shared_ptr<ast::WhileStatement>;
+  auto parse_while_statement() -> util::Box<ast::WhileStatement>;
 
-  auto parse_for_in_statement() -> std::shared_ptr<ast::ForInStatement>;
+  auto parse_for_in_statement() -> util::Box<ast::ForInStatement>;
 
-  auto parse_expression_statement()
-      -> std::shared_ptr<ast::ExpressionStatement>;
+  auto parse_expression_statement() -> util::Box<ast::ExpressionStatement>;
 
-  auto optional_parse_identifier()
-      -> std::optional<std::shared_ptr<ast::Identifier>>;
+  auto optional_parse_identifier() -> std::optional<util::Box<ast::Identifier>>;
 
-  auto parse_identifier() -> std::shared_ptr<ast::Identifier>;
+  auto parse_identifier() -> util::Box<ast::Identifier>;
 
   auto optional_parse_numeric_literal()
-      -> std::optional<std::shared_ptr<ast::Literal>>;
+      -> std::optional<util::Box<ast::Literal>>;
 
-  auto parse_numeric_literal() -> std::shared_ptr<ast::Literal>;
+  auto parse_numeric_literal() -> util::Box<ast::Literal>;
 
   auto optional_parse_string_literal()
-      -> std::optional<std::shared_ptr<ast::Literal>>;
+      -> std::optional<util::Box<ast::Literal>>;
 
-  auto parse_string_literal() -> std::shared_ptr<ast::Literal>;
+  auto parse_string_literal() -> util::Box<ast::Literal>;
 
   auto optional_parse_array_expression()
-      -> std::optional<std::shared_ptr<ast::ArrayExpression>>;
+      -> std::optional<util::Box<ast::ArrayExpression>>;
 
-  auto parse_array_expression() -> std::shared_ptr<ast::ArrayExpression>;
+  auto parse_array_expression() -> util::Box<ast::ArrayExpression>;
 
   auto optional_parse_object_expression()
-      -> std::optional<std::shared_ptr<ast::ObjectExpression>>;
+      -> std::optional<util::Box<ast::ObjectExpression>>;
 
-  auto parse_object_expression() -> std::shared_ptr<ast::ObjectExpression>;
+  auto parse_object_expression() -> util::Box<ast::ObjectExpression>;
 
-  auto parse_expression() -> ast::ExpressionPtr;
+  auto parse_expression() -> ast::Expression;
 
   auto consume_token(ast::TokenType type) -> Token;
 

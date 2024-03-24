@@ -6,13 +6,14 @@
 #include <variant>
 
 #include "ctjs/runtime/value.h"
+#include "ctjs/util/box.h"
 
 namespace ctjs {
 class Environment {
  public:
   Environment() = default;
 
-  explicit Environment(std::shared_ptr<Environment> parent);
+  explicit Environment(Environment* parent);
 
   Environment(Environment const&) = default;
   Environment(Environment&&) = default;
@@ -28,7 +29,6 @@ class Environment {
 
  private:
   std::unordered_map<std::string, Value> scope_;
-  std::shared_ptr<Environment> parent_;
+  Environment* parent_{nullptr};
 };
-using EnvironmentPtr = std::variant<std::shared_ptr<Environment>>;
 }  // namespace ctjs

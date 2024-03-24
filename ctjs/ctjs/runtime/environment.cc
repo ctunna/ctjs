@@ -3,8 +3,7 @@
 #include <iostream>
 
 namespace ctjs {
-Environment::Environment(std::shared_ptr<Environment> parent)
-    : parent_(std::move(parent)) {}
+Environment::Environment(Environment* parent) : parent_(parent) {}
 
 auto Environment::get(std::string const& name) const -> Value {
   if (scope_.contains(name)) {

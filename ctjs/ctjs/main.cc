@@ -4,7 +4,7 @@
 #include <string>
 #include <variant>
 
-#include "ctjs/ast/ast_node.h"
+#include "ctjs/ast/ast.h"
 #include "ctjs/parser.h"
 #include "ctjs/runtime/environment.h"
 #include "ctjs/tokenizer.h"
@@ -25,10 +25,11 @@ int main(int argc, char** argv) {
 
   std::cout << std::endl;
 
-  auto env{std::make_shared<ctjs::Environment>()};
-  std::visit(ctjs::InterpreterVisitor{}, program, ctjs::EnvironmentPtr{env});
+  ctjs::InterpreterVisitor interpreter;
 
-  env->to_string();
+  std::visit(interpreter, program);
+
+  interpreter.print_environment();
 
   return 0;
 }

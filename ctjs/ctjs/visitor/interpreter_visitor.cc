@@ -3,129 +3,120 @@
 #include <iostream>
 #include <variant>
 
+#include "ctjs/runtime/array.h"
+#include "ctjs/runtime/function.h"
 #include "ctjs/runtime/return_exception.h"
 
 namespace ctjs {
-auto InterpreterVisitor::operator()(
-    std::shared_ptr<ast::Program> program,
-    std::shared_ptr<Environment> environment) const -> Value {
+InterpreterVisitor::InterpreterVisitor(Environment environment)
+    : environment_(std::move(environment)) {}
+
+auto InterpreterVisitor::operator()(util::Box<ast::Program>& program) -> Value {
   for (auto& stmt : program->body) {
-    visit(stmt, environment);
+    std::visit(*this, stmt);
   }
   return Value();
 }
 
-auto InterpreterVisitor::operator()(
-    std::shared_ptr<ast::BlockStatement> statement,
-    std::shared_ptr<Environment> environment) const -> Value {
-  auto env{std::make_shared<Environment>(environment)};
+auto InterpreterVisitor::operator()(util::Box<ast::BlockStatement>& statement)
+    -> Value {
+  Environment environment{&environment_};
   for (auto& stmt : statement->body) {
-    visit(stmt, env);
+    std::visit(InterpreterVisitor{environment}, stmt);
   }
   return Value();
 }
 
-auto InterpreterVisitor::operator()(
-    std::shared_ptr<ast::ReturnStatement> statement,
-    std::shared_ptr<Environment> environment) const -> Value {
-  auto value{statement->argument_ ? visit(*statement->argument_, environment)
+auto InterpreterVisitor::operator()(util::Box<ast::ReturnStatement>& statement)
+    -> Value {
+  auto value{statement->argument_ ? std::visit(*this, *statement->argument_)
                                   : Value()};
   throw ReturnException(value);
 }
 
-auto InterpreterVisitor::operator()(
-    std::shared_ptr<ast::VariableDeclaration> decl,
-    std::shared_ptr<Environment> environment) const -> Value {
+auto InterpreterVisitor::operator()(util::Box<ast::VariableDeclaration>& decl)
+    -> Value {
   for (auto& decl : decl->declarations) {
-    visit(decl, environment);
+    std::visit(*this, decl);
   }
   return Value();
 }
 
-auto InterpreterVisitor::operator()(
-    std::shared_ptr<ast::VariableDeclarator> decl,
-    std::shared_ptr<Environment> environment) const -> Value {
-  auto value{visit(decl->init, environment)};
-  auto id{std::get<std::shared_ptr<ast::Identifier>>(decl->id)};
-  environment->define(id->name, value);
+auto InterpreterVisitor::operator()(util::Box<ast::VariableDeclarator>& decl)
+    -> Value {
+  auto value{std::visit(*this, decl->init)};
+  auto id{std::get<util::Box<ast::Identifier>>(decl->id)};
+  environment_.define(id->name, value);
   return value;
 }
 
-auto InterpreterVisitor::operator()(
-    std::shared_ptr<ast::IfStatement> statement,
-    std::shared_ptr<Environment> environment) const -> Value {
-  auto test{visit(statement->test, environment)};
+auto InterpreterVisitor::operator()(util::Box<ast::IfStatement>& statement)
+    -> Value {
+  auto test{std::visit(*this, statement->test)};
   if (static_cast<bool>(test)) {
-    return visit(statement->consquent, environment);
+    return std::visit(*this, statement->consquent);
   } else if (statement->alternate) {
-    return visit(*statement->alternate, environment);
+    return std::visit(*this, *statement->alternate);
   }
   return Value();
 }
 
-auto InterpreterVisitor::operator()(
-    std::shared_ptr<ast::WhileStatement> statement,
-    std::shared_ptr<Environment> environment) const -> Value {
-  while (static_cast<bool>(visit(statement->condition, environment))) {
-    visit(statement->body, environment);
+auto InterpreterVisitor::operator()(util::Box<ast::WhileStatement>& statement)
+    -> Value {
+  while (static_cast<bool>(std::visit(*this, statement->condition))) {
+    std::visit(*this, statement->body);
   }
   return Value();
 }
 
-auto InterpreterVisitor::operator()(
-    std::shared_ptr<ast::ForInStatement> statement,
-    std::shared_ptr<Environment> environment) const -> Value {
-  auto value{visit(statement->right, environment)};
+auto InterpreterVisitor::operator()(util::Box<ast::ForInStatement>& statement)
+    -> Value {
+  auto value{std::visit(*this, statement->right)};
   auto obj{value.get<std::shared_ptr<Object>>()};
-  auto env{std::make_shared<Environment>(environment)};
+  Environment environment{&environment_};
   for (auto const& [key, value] : obj->properties()) {
-    auto id{std::get<std::shared_ptr<ast::Identifier>>(statement->left)};
-    env->define(id->name, key);
-    visit(statement->body, env);
+    auto id{std::get<util::Box<ast::Identifier>>(statement->left)};
+    environment.define(id->name, key);
+    std::visit(InterpreterVisitor{environment}, statement->body);
   }
   return Value();
 }
 
-auto InterpreterVisitor::operator()(
-    std::shared_ptr<ast::FunctionDeclaration> decl,
-    std::shared_ptr<Environment> environment) const -> Value {
+auto InterpreterVisitor::operator()(util::Box<ast::FunctionDeclaration>& decl)
+    -> Value {
   std::shared_ptr<Object> function{
-      std::make_shared<Function>(decl, environment)};
-  auto id{std::get<std::shared_ptr<ast::Identifier>>(decl->id)};
-  environment->define(id->name, function);
+      std::make_shared<Function>(decl.get(), &environment_)};
+  auto id{std::get<util::Box<ast::Identifier>>(decl->id)};
+  environment_.define(id->name, function);
   return function;
 }
 
 auto InterpreterVisitor::operator()(
-    std::shared_ptr<ast::ExpressionStatement> statement,
-    std::shared_ptr<Environment> environment) const -> Value {
-  return visit(statement->expression_, environment);
+    util::Box<ast::ExpressionStatement>& statement) -> Value {
+  return std::visit(*this, statement->expression_);
 }
 
-auto InterpreterVisitor::operator()(
-    std::shared_ptr<ast::ArrayExpression> expression,
-    std::shared_ptr<Environment> environment) const -> Value {
+auto InterpreterVisitor::operator()(util::Box<ast::ArrayExpression>& expression)
+    -> Value {
   auto array{std::make_shared<Array>()};
-  for (auto const& element : expression->elements) {
-    array->push(visit(element, environment));
+  for (auto& element : expression->elements) {
+    array->push(std::visit(*this, element));
   }
   return Value(array);
 }
 
 auto InterpreterVisitor::operator()(
-    std::shared_ptr<ast::AssignmentExpression> expression,
-    std::shared_ptr<Environment> environment) const -> Value {
-  auto value{visit(expression->right, environment)};
-  auto id{std::get<std::shared_ptr<ast::Identifier>>(expression->left)};
-  environment->set(id->name, value);
+    util::Box<ast::AssignmentExpression>& expression) -> Value {
+  auto value{std::visit(*this, expression->right)};
+  auto id{std::get<util::Box<ast::Identifier>>(expression->left)};
+  environment_.set(id->name, value);
   return value;
 }
 
 auto InterpreterVisitor::operator()(
-    std::shared_ptr<ast::BinaryExpression> expression,
-    std::shared_ptr<Environment> environment) const -> Value {
-  auto left{visit(expression->left, environment)};
-  auto right{visit(expression->right, environment)};
+    util::Box<ast::BinaryExpression>& expression) -> Value {
+  auto left{std::visit(*this, expression->left)};
+  auto right{std::visit(*this, expression->right)};
   switch (expression->op) {
     case ast::BinaryOperator::Add:
       return left + right;
@@ -144,15 +135,14 @@ auto InterpreterVisitor::operator()(
   }
 }
 
-auto InterpreterVisitor::operator()(
-    std::shared_ptr<ast::CallExpression> expression,
-    std::shared_ptr<Environment> environment) const -> Value {
-  auto expr{visit(expression->callee, environment)};
+auto InterpreterVisitor::operator()(util::Box<ast::CallExpression>& expression)
+    -> Value {
+  auto expr{std::visit(*this, expression->callee)};
   auto obj{expr.get<std::shared_ptr<Object>>()};
   auto callee{std::dynamic_pointer_cast<Function>(obj)};
   std::vector<Value> args;
   for (auto& arg : expression->arguments) {
-    args.push_back(visit(arg, environment));
+    args.push_back(std::visit(*this, arg));
   }
   try {
     return callee->call(args);
@@ -161,36 +151,32 @@ auto InterpreterVisitor::operator()(
   }
 }
 
-auto InterpreterVisitor::operator()(
-    std::shared_ptr<ast::Identifier> id,
-    std::shared_ptr<Environment> environment) const -> Value {
-  return environment->get(id->name);
+auto InterpreterVisitor::operator()(util::Box<ast::Identifier>& id) -> Value {
+  return environment_.get(id->name);
 }
 
-auto InterpreterVisitor::operator()(
-    std::shared_ptr<ast::Literal> literal,
-    [[maybe_unused]] std::shared_ptr<Environment> environment) const -> Value {
+auto InterpreterVisitor::operator()(util::Box<ast::Literal>& literal) -> Value {
   return literal->value;
 }
 
 auto InterpreterVisitor::operator()(
-    std::shared_ptr<ast::MemberExpression> expression,
-    std::shared_ptr<Environment> environment) const -> Value {
-  auto object{visit(expression->object, environment)};
-  auto property{visit(expression->property, environment)};
+    util::Box<ast::MemberExpression>& expression) -> Value {
+  auto object{std::visit(*this, expression->object)};
+  auto property{std::visit(*this, expression->property)};
   return object[property];
 }
 
 auto InterpreterVisitor::operator()(
-    std::shared_ptr<ast::ObjectExpression> expression,
-    std::shared_ptr<Environment> environment) const -> Value {
+    util::Box<ast::ObjectExpression>& expression) -> Value {
   auto object{std::make_shared<Object>()};
   for (auto& prop : expression->properties) {
-    auto key{std::get<std::shared_ptr<ast::Identifier>>(prop.key)};
-    auto value{visit(prop.value, environment)};
+    auto key{std::get<util::Box<ast::Identifier>>(prop.key)};
+    auto value{std::visit(*this, prop.value)};
     object->set_property(key->name, value);
   }
   return Value(object);
 }
+
+void InterpreterVisitor::print_environment() { environment_.to_string(); }
 
 }  // namespace ctjs

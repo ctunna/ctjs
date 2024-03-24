@@ -4,8 +4,6 @@
 #include <string>
 #include <variant>
 
-#include "ctjs/runtime/array.h"
-#include "ctjs/runtime/function.h"
 #include "ctjs/runtime/object.h"
 
 namespace ctjs {
