@@ -3,6 +3,7 @@
 #include <memory>
 #include <string>
 #include <vector>
+#include <optional>
 
 #include "ctjs/ast/binary_operator.h"
 #include "ctjs/ast/source_location.h"

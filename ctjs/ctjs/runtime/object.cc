@@ -1,5 +1,7 @@
 #include "ctjs/runtime/object.h"
 
+#include <algorithm>
+
 #include "ctjs/runtime/value.h"
 #include "ctjs/util/string/join.h"
 
