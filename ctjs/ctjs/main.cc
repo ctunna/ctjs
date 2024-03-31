@@ -5,31 +5,48 @@
 #include <variant>
 
 #include "ctjs/ast/ast.h"
+#include "ctjs/interpreter.h"
 #include "ctjs/parser.h"
 #include "ctjs/runtime/environment.h"
 #include "ctjs/tokenizer.h"
+#include "ctjs/util/file/read_all_text.h"
 #include "ctjs/visitor/interpreter_visitor.h"
 #include "ctjs/visitor/print_visitor.h"
 
+using namespace ctjs;
+
 int main(int argc, char** argv) {
-  if (argc < 2) {
-    std::cerr << "Usage: " << argv[0] << " <filename>" << std::endl;
+  try {
+    auto flag{std::string(argv[1])};
+
+    if (flag == "-h") {
+      std::cout << "Usage:\n"
+                << argv[0] << " [option] <argument>\n\n"
+                << "Options:\n"
+                << "  -h          Show this help message\n"
+                << "  <filename>  Execute the script from the provided file\n"
+                << "  -p <file>   Parse the file and print the AST without "
+                   "executing"
+                << std::endl;
+      return 1;
+    }
+
+    if (flag == "-p") {
+      if (argc < 3) {
+        std::cerr << "Error: '-p' option requires a filename argument.\n";
+        return 1;
+      }
+      Parser p{util::file::read_all_text(argv[2])};
+      ast::AstNode program{p.parse()};
+      std::visit(PrintVisitor{0}, program);
+    }
+
+    Interpreter interpreter;
+    interpreter.run(util::file::read_all_text(argv[1]));
+  } catch (std::exception const& e) {
+    std::cerr << "Error: " << e.what() << std::endl;
     return 1;
   }
-  std::ifstream file(argv[1]);
-  std::string code((std::istreambuf_iterator<char>(file)),
-                   std::istreambuf_iterator<char>());
-  ctjs::Parser p{code};
-  ctjs::ast::AstNode program{p.parse()};
-  std::visit(ctjs::PrintVisitor{0}, program);
-
-  std::cout << std::endl;
-
-  ctjs::InterpreterVisitor interpreter;
-
-  std::visit(interpreter, program);
-
-  interpreter.print_environment();
 
   return 0;
 }

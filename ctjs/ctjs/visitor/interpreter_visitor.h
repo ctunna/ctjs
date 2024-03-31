@@ -37,7 +37,7 @@ class InterpreterVisitor {
   void print_environment();
 
  private:
-  Environment environment_{};
+  Environment environment_;
 };
 
 }  // namespace ctjs
