@@ -8,8 +8,8 @@
 #include "ctjs/runtime/return_exception.h"
 
 namespace ctjs {
-InterpreterVisitor::InterpreterVisitor(Environment environment)
-    : environment_(std::move(environment)) {}
+InterpreterVisitor::InterpreterVisitor(Environment* environment)
+    : environment_(environment) {}
 
 auto InterpreterVisitor::operator()(util::Box<ast::Program>& program) -> Value {
   for (auto& stmt : program->body) {
@@ -20,9 +20,9 @@ auto InterpreterVisitor::operator()(util::Box<ast::Program>& program) -> Value {
 
 auto InterpreterVisitor::operator()(util::Box<ast::BlockStatement>& statement)
     -> Value {
-  Environment environment{&environment_};
+  Environment environment{environment_};
   for (auto& stmt : statement->body) {
-    std::visit(InterpreterVisitor{environment}, stmt);
+    std::visit(InterpreterVisitor{&environment}, stmt);
   }
   return Value();
 }
@@ -46,7 +46,7 @@ auto InterpreterVisitor::operator()(util::Box<ast::VariableDeclarator>& decl)
     -> Value {
   auto value{std::visit(*this, decl->init)};
   auto id{std::get<util::Box<ast::Identifier>>(decl->id)};
-  environment_.define(id->name, value);
+  environment_->define(id->name, value);
   return value;
 }
 
@@ -73,11 +73,11 @@ auto InterpreterVisitor::operator()(util::Box<ast::ForInStatement>& statement)
     -> Value {
   auto value{std::visit(*this, statement->right)};
   auto obj{value.get<std::shared_ptr<Object>>()};
-  Environment environment{&environment_};
+  Environment environment{environment_};
   for (auto const& [key, value] : obj->properties()) {
     auto id{std::get<util::Box<ast::Identifier>>(statement->left)};
     environment.define(id->name, key);
-    std::visit(InterpreterVisitor{environment}, statement->body);
+    std::visit(InterpreterVisitor{&environment}, statement->body);
   }
   return Value();
 }
@@ -85,9 +85,9 @@ auto InterpreterVisitor::operator()(util::Box<ast::ForInStatement>& statement)
 auto InterpreterVisitor::operator()(util::Box<ast::FunctionDeclaration>& decl)
     -> Value {
   std::shared_ptr<Object> function{
-      std::make_shared<Function>(decl.get(), &environment_)};
+      std::make_shared<Function>(decl.get(), environment_)};
   auto id{std::get<util::Box<ast::Identifier>>(decl->id)};
-  environment_.define(id->name, function);
+  environment_->define(id->name, function);
   return function;
 }
 
@@ -109,7 +109,7 @@ auto InterpreterVisitor::operator()(
     util::Box<ast::AssignmentExpression>& expression) -> Value {
   auto value{std::visit(*this, expression->right)};
   auto id{std::get<util::Box<ast::Identifier>>(expression->left)};
-  environment_.set(id->name, value);
+  environment_->set(id->name, value);
   return value;
 }
 
@@ -152,7 +152,7 @@ auto InterpreterVisitor::operator()(util::Box<ast::CallExpression>& expression)
 }
 
 auto InterpreterVisitor::operator()(util::Box<ast::Identifier>& id) -> Value {
-  return environment_.get(id->name);
+  return environment_->get(id->name);
 }
 
 auto InterpreterVisitor::operator()(util::Box<ast::Literal>& literal) -> Value {
@@ -176,7 +176,4 @@ auto InterpreterVisitor::operator()(
   }
   return Value(object);
 }
-
-void InterpreterVisitor::print_environment() { environment_.to_string(); }
-
 }  // namespace ctjs

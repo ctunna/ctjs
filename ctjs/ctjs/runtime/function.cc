@@ -18,7 +18,7 @@ Value Function::call(std::vector<Value> args) {
     auto id{std::get<util::Box<ast::Identifier>>(params[i])};
     environment.define(id->name, i < args.size() ? args[i] : Value());
   }
-  return std::visit(InterpreterVisitor{environment}, declaration_->body);
+  return std::visit(InterpreterVisitor{&environment}, declaration_->body);
 }
 
 auto Function::to_string() const -> std::string { return "[Function]"; }

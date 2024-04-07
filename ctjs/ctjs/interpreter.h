@@ -12,14 +12,11 @@
 namespace ctjs {
 class Interpreter {
  public:
-  void run(std::string_view code) {
+  static void eval(Environment& environment, std::string_view code) {
     Parser p{code};
+    InterpreterVisitor visitor{&environment};
     ctjs::ast::AstNode program{p.parse()};
-    std::visit(interpreter_, program);
-    interpreter_.print_environment();
+    std::visit(visitor, program);
   }
-
- private:
-  InterpreterVisitor interpreter_;
 };
 }  // namespace ctjs

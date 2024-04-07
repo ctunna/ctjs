@@ -29,7 +29,7 @@ void Environment::set(std::string const& name, Value value) {
   }
 }
 
-void Environment::to_string() {
+void Environment::print() {
   for (auto const& [name, value] : scope_) {
     std::cout << name << " = " << value.to_string() << std::endl;
   }

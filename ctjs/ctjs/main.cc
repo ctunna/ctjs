@@ -18,7 +18,6 @@ using namespace ctjs;
 int main(int argc, char** argv) {
   try {
     auto flag{std::string(argv[1])};
-
     if (flag == "-h") {
       std::cout << "Usage:\n"
                 << argv[0] << " [option] <argument>\n\n"
@@ -28,21 +27,19 @@ int main(int argc, char** argv) {
                 << "  -p <file>   Parse the file and print the AST without "
                    "executing"
                 << std::endl;
-      return 1;
-    }
-
-    if (flag == "-p") {
+    } else if (flag == "-p") {
       if (argc < 3) {
-        std::cerr << "Error: '-p' option requires a filename argument.\n";
-        return 1;
+        throw std::runtime_error{"'-p' option requires a filename argument."};
       }
-      Parser p{util::file::read_all_text(argv[2])};
-      ast::AstNode program{p.parse()};
+      Parser parser{util::file::read_all_text(argv[2])};
+      ast::AstNode program{parser.parse()};
       std::visit(PrintVisitor{0}, program);
+    } else {
+      Interpreter interpreter;
+      Environment environment;
+      interpreter.eval(environment, util::file::read_all_text(argv[1]));
+      environment.print();
     }
-
-    Interpreter interpreter;
-    interpreter.run(util::file::read_all_text(argv[1]));
   } catch (std::exception const& e) {
     std::cerr << "Error: " << e.what() << std::endl;
     return 1;

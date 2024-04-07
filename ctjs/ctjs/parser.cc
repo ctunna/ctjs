@@ -294,6 +294,14 @@ auto Parser::parse_expression() -> ast::Expression {
         ast::MemberExpression(file_name_, location_, *optional_expr, literal);
   }
 
+  if (optional_expr && expect_token(TokenType::Period)) {
+    consume_token(TokenType::Period);
+    auto identifier{parse_identifier()};
+    auto literal{ast::Literal(file_name_, location_, identifier->name)};
+    optional_expr =
+        ast::MemberExpression(file_name_, location_, *optional_expr, literal);
+  }
+
   if (!optional_expr) {
     optional_expr = optional_parse_array_expression();
   }

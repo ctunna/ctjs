@@ -169,10 +169,12 @@ void PrintVisitor::operator()(
     util::Box<ast::ObjectExpression>& expression) const {
   std::cout << std::string(indent_, ' ') << "ObjectExpression([\n";
   for (auto& prop : expression->properties) {
-    std::visit(PrintVisitor{indent_ + 2}, prop.key);
-    std::cout << ": ";
-    std::visit(PrintVisitor{0}, prop.value);
+    std::cout << std::string(indent_ + 2, ' ') << "Property(\n";
+    std::visit(PrintVisitor{indent_ + 4}, prop.key);
+    std::cout << ",\n";
+    std::visit(PrintVisitor{indent_ + 4}, prop.value);
     std::cout << "\n";
+    std::cout << std::string(indent_ + 2, ' ') << "),\n";
   }
   std::cout << std::string(indent_, ' ') << "])";
 }

@@ -10,8 +10,7 @@
 namespace ctjs {
 class InterpreterVisitor {
  public:
-  InterpreterVisitor() = default;
-  InterpreterVisitor(Environment Environment);
+  explicit InterpreterVisitor(Environment* environment);
 
   auto operator()(util::Box<ast::Program>& program) -> Value;
 
@@ -34,10 +33,8 @@ class InterpreterVisitor {
   auto operator()(util::Box<ast::MemberExpression>& expression) -> Value;
   auto operator()(util::Box<ast::ObjectExpression>& expression) -> Value;
 
-  void print_environment();
-
  private:
-  Environment environment_;
+  Environment* environment_;
 };
 
 }  // namespace ctjs

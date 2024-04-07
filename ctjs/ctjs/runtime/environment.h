@@ -25,7 +25,7 @@ class Environment {
   auto get(std::string const& name) const -> Value;
   void set(std::string const& name, Value value);
 
-  void to_string();
+  void print();
 
  private:
   std::unordered_map<std::string, Value> scope_;

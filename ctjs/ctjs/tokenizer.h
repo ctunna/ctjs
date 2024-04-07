@@ -50,6 +50,6 @@ class Tokenizer {
   auto is_line_comment() -> bool;
 
   size_t position_{0};
-  std::string_view source_;
+  std::string source_;
 };
 }  // namespace ctjs
