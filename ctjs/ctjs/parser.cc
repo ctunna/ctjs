@@ -49,14 +49,17 @@ bool is_binary_operator(TokenType type) {
   }
 }
 
-Parser::Parser(std::string_view source) : tokenizer_(source) {}
+Parser::Parser(std::string file_name, std::string_view source)
+    : file_name_(std::move(file_name)), tokenizer_(source) {}
 
 auto Parser::parse() -> util::Box<ast::Program> {
   std::vector<ast::Statement> statements;
+  auto start{position()};
   while (tokenizer_.ready()) {
     statements.push_back(parse_statement());
   }
-  return ast::Program(file_name_, location_, statements);
+  auto end{position()};
+  return ast::Program({file_name_, start, end}, statements);
 }
 
 auto Parser::parse_statement() -> ast::Statement {
@@ -82,18 +85,22 @@ auto Parser::parse_statement() -> ast::Statement {
 }
 
 auto Parser::parse_return_statement() -> util::Box<ast::ReturnStatement> {
+  auto start{position()};
   consume_token(TokenType::Return);
   if (expect_token(TokenType::Semicolon)) {
     consume_token(TokenType::Semicolon);
-    return ast::ReturnStatement(file_name_, location_, std::nullopt);
+    auto end{position()};
+    return ast::ReturnStatement({file_name_, start, end}, std::nullopt);
   }
   auto expression{parse_expression()};
   consume_token(TokenType::Semicolon);
-  return ast::ReturnStatement(file_name_, location_, expression);
+  auto end{position()};
+  return ast::ReturnStatement({file_name_, start, end}, expression);
 }
 
 auto Parser::parse_function_declaration()
     -> util::Box<ast::FunctionDeclaration> {
+  auto start{position()};
   consume_token(TokenType::Function);
   auto identifier{parse_identifier()};
   consume_token(TokenType::ParenOpen);
@@ -106,27 +113,33 @@ auto Parser::parse_function_declaration()
   }
   consume_token(TokenType::ParenClose);
   auto body{parse_block_statement()};
-  return ast::FunctionDeclaration(file_name_, location_, identifier, params,
+  auto end{position()};
+  return ast::FunctionDeclaration({file_name_, start, end}, identifier, params,
                                   body);
 }
 
 auto Parser::parse_expression_statement()
     -> util::Box<ast::ExpressionStatement> {
+  auto start{position()};
   auto expression{parse_expression()};
   consume_token(TokenType::Semicolon);
-  return ast::ExpressionStatement(file_name_, location_, expression);
+  auto end{position()};
+  return ast::ExpressionStatement({file_name_, start, end}, expression);
 }
 
 auto Parser::parse_while_statement() -> util::Box<ast::WhileStatement> {
+  auto start{position()};
   consume_token(TokenType::While);
   consume_token(TokenType::ParenOpen);
   auto test{parse_expression()};
   consume_token(TokenType::ParenClose);
   auto body{parse_statement()};
-  return ast::WhileStatement(file_name_, location_, test, body);
+  auto end{position()};
+  return ast::WhileStatement({file_name_, start, end}, test, body);
 }
 
 auto Parser::parse_for_in_statement() -> util::Box<ast::ForInStatement> {
+  auto start{position()};
   consume_token(TokenType::For);
   consume_token(TokenType::ParenOpen);
   consume_token(TokenType::Var);
@@ -135,46 +148,55 @@ auto Parser::parse_for_in_statement() -> util::Box<ast::ForInStatement> {
   auto right{parse_expression()};
   consume_token(TokenType::ParenClose);
   auto body{parse_statement()};
-  return ast::ForInStatement(file_name_, location_, left, right, body);
+  auto end{position()};
+  return ast::ForInStatement({file_name_, start, end}, left, right, body);
 }
 
 auto Parser::parse_block_statement() -> util::Box<ast::BlockStatement> {
+  auto start{position()};
   consume_token(TokenType::CurlyOpen);
   std::vector<ast::Statement> statements;
   while (!expect_token(TokenType::CurlyClose)) {
     statements.push_back(parse_statement());
   }
   consume_token(TokenType::CurlyClose);
-  return ast::BlockStatement(file_name_, location_, statements);
+  auto end{position()};
+  return ast::BlockStatement({file_name_, start, end}, statements);
 }
 
 auto Parser::parse_if_statement() -> util::Box<ast::IfStatement> {
+  auto start{position()};
   consume_token(TokenType::If);
   consume_token(TokenType::ParenOpen);
   auto test{parse_expression()};
   consume_token(TokenType::ParenClose);
   auto consequent{parse_statement()};
   if (!expect_token(TokenType::Else)) {
-    return ast::IfStatement(file_name_, location_, test, consequent,
+    auto end{position()};
+    return ast::IfStatement({file_name_, start, end}, test, consequent,
                             std::nullopt);
   }
   consume_token(TokenType::Else);
   auto alternate{parse_statement()};
-  return ast::IfStatement(file_name_, location_, test, consequent, alternate);
+  auto end{position()};
+  return ast::IfStatement({file_name_, start, end}, test, consequent,
+                          alternate);
 }
 
 auto Parser::parse_variable_declaration()
     -> util::Box<ast::VariableDeclaration> {
+  auto start{position()};
   consume_token(TokenType::Var);
   auto identifier{parse_identifier()};
   // TODO: Assignment is optional.
   consume_token(TokenType::Equals);
   auto expression{parse_expression()};
   consume_token(TokenType::Semicolon);
-  ast::VariableDeclarator declarator{file_name_, location_, identifier,
-                                     expression};
+  auto end{position()};
+  ast::VariableDeclarator declarator{
+      {file_name_, start, end}, identifier, expression};
   std::vector<ast::VariableDeclaratorVariant> declarators{declarator};
-  return ast::VariableDeclaration(file_name_, location_, declarators);
+  return ast::VariableDeclaration({file_name_, start, end}, declarators);
 }
 
 auto Parser::optional_parse_identifier()
@@ -186,8 +208,10 @@ auto Parser::optional_parse_identifier()
 }
 
 auto Parser::parse_identifier() -> util::Box<ast::Identifier> {
+  auto start{position()};
   auto token{consume_token(TokenType::Identifier)};
-  return ast::Identifier(file_name_, location_, token.value);
+  auto end{position()};
+  return ast::Identifier({file_name_, start, end}, token.value);
 }
 
 auto Parser::optional_parse_numeric_literal()
@@ -200,8 +224,10 @@ auto Parser::optional_parse_numeric_literal()
 }
 
 auto Parser::parse_numeric_literal() -> util::Box<ast::Literal> {
+  auto start{position()};
   auto token{consume_token(TokenType::NumericLiteral)};
-  return ast::Literal(file_name_, location_, std::stoi(token.value));
+  auto end{position()};
+  return ast::Literal({file_name_, start, end}, std::stoi(token.value));
 }
 
 auto Parser::optional_parse_string_literal()
@@ -214,8 +240,10 @@ auto Parser::optional_parse_string_literal()
 }
 
 auto Parser::parse_string_literal() -> util::Box<ast::Literal> {
+  auto start{position()};
   auto token{consume_token(TokenType::StringLiteral)};
-  return ast::Literal(file_name_, location_, token.value);
+  auto end{position()};
+  return ast::Literal({file_name_, start, end}, token.value);
 }
 
 auto Parser::optional_parse_array_expression()
@@ -227,6 +255,7 @@ auto Parser::optional_parse_array_expression()
 }
 
 auto Parser::parse_array_expression() -> util::Box<ast::ArrayExpression> {
+  auto start{position()};
   consume_token(TokenType::BracketOpen);
   std::vector<ast::Expression> elements;
   while (!expect_token(TokenType::BracketClose)) {
@@ -236,7 +265,33 @@ auto Parser::parse_array_expression() -> util::Box<ast::ArrayExpression> {
     }
   }
   consume_token(TokenType::BracketClose);
-  return ast::ArrayExpression(file_name_, location_, elements);
+  auto end{position()};
+  return ast::ArrayExpression({file_name_, start, end}, elements);
+}
+
+auto Parser::parse_function_expression() -> util::Box<ast::FunctionExpression> {
+  auto start{position()};
+  consume_token(TokenType::Function);
+  consume_token(TokenType::ParenOpen);
+  std::vector<ast::IdentifierVariant> params;
+  while (!expect_token(TokenType::ParenClose)) {
+    params.push_back(parse_identifier());
+    if (expect_token(TokenType::Comma)) {
+      consume_token(TokenType::Comma);
+    }
+  }
+  consume_token(TokenType::ParenClose);
+  auto body{parse_block_statement()};
+  auto end{position()};
+  return ast::FunctionExpression({file_name_, start, end}, params, body);
+}
+
+auto Parser::optional_parse_function_expression()
+    -> std::optional<util::Box<ast::FunctionExpression>> {
+  if (!expect_token(TokenType::Function)) {
+    return {};
+  }
+  return parse_function_expression();
 }
 
 auto Parser::optional_parse_object_expression()
@@ -248,6 +303,7 @@ auto Parser::optional_parse_object_expression()
 }
 
 auto Parser::parse_object_expression() -> util::Box<ast::ObjectExpression> {
+  auto start{position()};
   consume_token(TokenType::CurlyOpen);
   std::vector<ast::Property> properties;
   while (!expect_token(TokenType::CurlyClose)) {
@@ -260,15 +316,18 @@ auto Parser::parse_object_expression() -> util::Box<ast::ObjectExpression> {
     }
   }
   consume_token(TokenType::CurlyClose);
-  return ast::ObjectExpression{file_name_, location_, properties};
+  auto end{position()};
+  return ast::ObjectExpression{{file_name_, start, end}, properties};
 }
 
 auto Parser::parse_expression() -> ast::Expression {
+  auto start{position()};
   std::optional<ast::Expression> optional_expr{optional_parse_identifier()};
 
   if (optional_expr && expect_token(TokenType::Equals)) {
     consume_token(TokenType::Equals);
-    return ast::AssignmentExpression(file_name_, location_, *optional_expr,
+    auto end{position()};
+    return ast::AssignmentExpression({file_name_, start, end}, *optional_expr,
                                      parse_expression());
   }
 
@@ -282,24 +341,32 @@ auto Parser::parse_expression() -> ast::Expression {
       }
     }
     consume_token(TokenType::ParenClose);
+    auto end{position()};
     optional_expr =
-        ast::CallExpression(file_name_, location_, *optional_expr, args);
+        ast::CallExpression({file_name_, start, end}, *optional_expr, args);
   }
 
   if (optional_expr && expect_token(TokenType::BracketOpen)) {
     consume_token(TokenType::BracketOpen);
     auto literal{parse_expression()};
     consume_token(TokenType::BracketClose);
-    optional_expr =
-        ast::MemberExpression(file_name_, location_, *optional_expr, literal);
+    auto end{position()};
+    optional_expr = ast::MemberExpression({file_name_, start, end},
+                                          *optional_expr, literal);
   }
 
   if (optional_expr && expect_token(TokenType::Period)) {
     consume_token(TokenType::Period);
+    auto id_start{position()};
     auto identifier{parse_identifier()};
-    auto literal{ast::Literal(file_name_, location_, identifier->name)};
-    optional_expr =
-        ast::MemberExpression(file_name_, location_, *optional_expr, literal);
+    auto end{position()};
+    auto literal{ast::Literal({file_name_, id_start, end}, identifier->name)};
+    optional_expr = ast::MemberExpression({file_name_, start, end},
+                                          *optional_expr, literal);
+  }
+
+  if (!optional_expr) {
+    optional_expr = optional_parse_function_expression();
   }
 
   if (!optional_expr) {
@@ -326,7 +393,8 @@ auto Parser::parse_expression() -> ast::Expression {
   auto next{tokenizer_.peek()};
   if (is_binary_operator(next.type)) {
     tokenizer_.next();
-    return ast::BinaryExpression(file_name_, location_,
+    auto end{position()};
+    return ast::BinaryExpression({file_name_, start, end},
                                  to_binary_operator(next.type), expr,
                                  parse_expression());
   }
@@ -347,5 +415,9 @@ auto Parser::expect_token(TokenType type) -> std::optional<Token> {
     return {};
   }
   return token;
+}
+
+auto Parser::position() -> ast::Position {
+  return ast::Position{tokenizer_.line(), tokenizer_.column()};
 }
 }  // namespace ctjs

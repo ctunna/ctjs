@@ -5,6 +5,7 @@
 #include <string_view>
 
 #include "ctjs/ast/ast.h"
+#include "ctjs/ast/position.h"
 #include "ctjs/token.h"
 #include "ctjs/tokenizer.h"
 #include "ctjs/util/box.h"
@@ -12,7 +13,7 @@
 namespace ctjs {
 class Parser {
  public:
-  Parser(std::string_view source);
+  Parser(std::string file_name, std::string_view source);
   Parser(const Parser &) = delete;
   Parser(Parser &&) = delete;
   Parser &operator=(const Parser &) = delete;
@@ -44,13 +45,16 @@ class Parser {
   auto optional_parse_object_expression()
       -> std::optional<util::Box<ast::ObjectExpression>>;
   auto parse_object_expression() -> util::Box<ast::ObjectExpression>;
+  auto parse_function_expression() -> util::Box<ast::FunctionExpression>;
+  auto optional_parse_function_expression()
+      -> std::optional<util::Box<ast::FunctionExpression>>;
   auto parse_expression() -> ast::Expression;
   auto consume_token(ast::TokenType type) -> Token;
   auto expect_token(ast::TokenType type) -> std::optional<Token>;
 
-  std::string file_name_{"index.js"};
-  ast::SourceLocation location_{"index.js", ast::Position(0, 0),
-                                ast::Position(0, 0)};
+  auto position() -> ast::Position;
+
+  std::string file_name_{};
   Tokenizer tokenizer_;
 };
 }  // namespace ctjs

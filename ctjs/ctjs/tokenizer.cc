@@ -54,6 +54,10 @@ auto Tokenizer::peek() -> Token {
 
 auto Tokenizer::next() -> Token {
   while (is_whitespace()) {
+    if (is_char('\n')) {
+      line_++;
+      col_ = 1;
+    }
     position_++;
   }
 
@@ -67,7 +71,7 @@ auto Tokenizer::next() -> Token {
     if (std::regex_match(str, re) ||
         (str == token && position_ + token.size() == source_.size())) {
       position_ += token.size();
-      return {token_type, token, 0, 0};
+      return {token_type, token, line_, col_};
     }
   }
 
@@ -78,32 +82,36 @@ auto Tokenizer::next() -> Token {
     for (const auto &[token, token_type] : map) {
       if (source_.substr(position_, token.size()) == token) {
         position_ += token.size();
-        return {token_type, token, 0, 0};
+        return {token_type, token, line_, col_};
       }
     }
   }
 
   if (is_digit()) {
     auto number{consume_numeric_literal()};
-    return {TokenType::NumericLiteral, number, 0, 0};
+    return {TokenType::NumericLiteral, number, line_, col_};
   }
 
   if (is_identifier_char()) {
     auto identifier{consume_identifier()};
-    return {TokenType::Identifier, identifier, 0, 0};
+    return {TokenType::Identifier, identifier, line_, col_};
   }
 
   if (is_char('"')) {
     auto str{consume_string_literal()};
-    return {TokenType::StringLiteral, str, 0, 0};
+    return {TokenType::StringLiteral, str, line_, col_};
   }
 
   if (position_ >= source_.size()) {
-    return {TokenType::Eof, "", 0, 0};
+    return {TokenType::Eof, "", line_, col_};
   }
 
   throw std::runtime_error("Unknown token");
 }
+
+auto Tokenizer::line() -> size_t { return line_; }
+
+auto Tokenizer::column() -> size_t { return col_; }
 
 auto Tokenizer::consume_string_literal() -> std::string {
   std::string str;
@@ -144,6 +152,10 @@ auto Tokenizer::consume_line_comment() -> void {
       position_++;
     }
     while (is_whitespace()) {
+      if (is_char('\n')) {
+        line_++;
+        col_ = 1;
+      }
       position_++;
     }
   }

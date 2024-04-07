@@ -31,7 +31,7 @@ int main(int argc, char** argv) {
       if (argc < 3) {
         throw std::runtime_error{"'-p' option requires a filename argument."};
       }
-      Parser parser{util::file::read_all_text(argv[2])};
+      Parser parser{argv[2], util::file::read_all_text(argv[2])};
       ast::AstNode program{parser.parse()};
       std::visit(PrintVisitor{0}, program);
     } else {

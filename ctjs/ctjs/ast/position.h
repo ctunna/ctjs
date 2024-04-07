@@ -1,12 +1,14 @@
 #pragma once
 
+#include <cstddef>
+
 namespace ctjs::ast {
 class Position {
  public:
-  Position(int line, int column);
+  Position(size_t line, size_t column);
 
  private:
-  [[maybe_unused]] int line_;
-  [[maybe_unused]] int column_;
+  size_t line_;
+  size_t column_;
 };
 }  // namespace ctjs::ast

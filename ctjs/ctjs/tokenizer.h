@@ -28,6 +28,10 @@ class Tokenizer {
 
   auto next() -> Token;
 
+  auto line() -> size_t;
+
+  auto column() -> size_t;
+
  private:
   auto consume_string_literal() -> std::string;
 
@@ -50,6 +54,8 @@ class Tokenizer {
   auto is_line_comment() -> bool;
 
   size_t position_{0};
+  size_t line_{1};
+  size_t col_{1};
   std::string source_;
 };
 }  // namespace ctjs

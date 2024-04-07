@@ -85,7 +85,7 @@ auto InterpreterVisitor::operator()(util::Box<ast::ForInStatement>& statement)
 auto InterpreterVisitor::operator()(util::Box<ast::FunctionDeclaration>& decl)
     -> Value {
   std::shared_ptr<Object> function{
-      std::make_shared<Function>(decl.get(), environment_)};
+      std::make_shared<Function>(&decl->params, &decl->body, environment_)};
   auto id{std::get<util::Box<ast::Identifier>>(decl->id)};
   environment_->define(id->name, function);
   return function;
@@ -176,4 +176,12 @@ auto InterpreterVisitor::operator()(
   }
   return Value(object);
 }
+
+auto InterpreterVisitor::operator()(
+    util::Box<ast::FunctionExpression>& expression) -> Value {
+  std::shared_ptr<Object> function{std::make_shared<Function>(
+      &expression->params, &expression->body, environment_)};
+  return function;
+}
+
 }  // namespace ctjs

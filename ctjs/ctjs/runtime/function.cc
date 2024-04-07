@@ -8,17 +8,17 @@
 #include "ctjs/visitor/interpreter_visitor.h"
 
 namespace ctjs {
-Function::Function(ast::FunctionDeclaration* declaration, Environment* closure)
-    : declaration_(declaration), closure_(std::move(closure)) {}
+Function::Function(std::vector<ast::IdentifierVariant>* params,
+                   ast::Statement* body, Environment* closure)
+    : params_(params), body_(body), closure_(closure) {}
 
 Value Function::call(std::vector<Value> args) {
   Environment environment{closure_};
-  auto& params{declaration_->params};
-  for (size_t i = 0; i < params.size(); ++i) {
-    auto id{std::get<util::Box<ast::Identifier>>(params[i])};
+  for (size_t i = 0; i < params_->size(); ++i) {
+    auto id{std::get<util::Box<ast::Identifier>>((*params_)[i])};
     environment.define(id->name, i < args.size() ? args[i] : Value());
   }
-  return std::visit(InterpreterVisitor{&environment}, declaration_->body);
+  return std::visit(InterpreterVisitor{&environment}, *body_);
 }
 
 auto Function::to_string() const -> std::string { return "[Function]"; }

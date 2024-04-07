@@ -30,6 +30,7 @@ class PrintVisitor {
   void operator()(util::Box<ast::Literal>& literal) const;
   void operator()(util::Box<ast::MemberExpression>& expression) const;
   void operator()(util::Box<ast::ObjectExpression>& expression) const;
+  void operator()(util::Box<ast::FunctionExpression>& expression) const;
 
  private:
   int indent_{};

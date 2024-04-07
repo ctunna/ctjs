@@ -32,6 +32,7 @@ class InterpreterVisitor {
   auto operator()(util::Box<ast::Literal>& literal) -> Value;
   auto operator()(util::Box<ast::MemberExpression>& expression) -> Value;
   auto operator()(util::Box<ast::ObjectExpression>& expression) -> Value;
+  auto operator()(util::Box<ast::FunctionExpression>& expression) -> Value;
 
  private:
   Environment* environment_;

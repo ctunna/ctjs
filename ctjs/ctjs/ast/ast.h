@@ -1,9 +1,9 @@
 #pragma once
 
 #include <memory>
+#include <optional>
 #include <string>
 #include <vector>
-#include <optional>
 
 #include "ctjs/ast/binary_operator.h"
 #include "ctjs/ast/source_location.h"
@@ -31,7 +31,8 @@ using Expression = std::variant<
     util::Box<class ArrayExpression>, util::Box<class AssignmentExpression>,
     util::Box<class BinaryExpression>, util::Box<class CallExpression>,
     util::Box<class Identifier>, util::Box<class Literal>,
-    util::Box<class MemberExpression>, util::Box<class ObjectExpression>>;
+    util::Box<class MemberExpression>, util::Box<class ObjectExpression>,
+    util::Box<class FunctionExpression>>;
 
 using VariableDeclaratorVariant =
     std::variant<util::Box<class VariableDeclarator>>;
@@ -40,20 +41,16 @@ using IdentifierVariant = std::variant<util::Box<class Identifier>>;
 
 class ArrayExpression {
  public:
-  ArrayExpression(std::string file_name, SourceLocation loc,
-                  std::vector<Expression> elements);
+  ArrayExpression(SourceLocation loc, std::vector<Expression> elements);
 
-  std::string file_name;
   SourceLocation loc;
   std::vector<Expression> elements;
 };
 
 class AssignmentExpression {
  public:
-  AssignmentExpression(std::string file_name, SourceLocation loc,
-                       Expression left, Expression right);
+  AssignmentExpression(SourceLocation loc, Expression left, Expression right);
 
-  std::string file_name;
   SourceLocation loc;
   Expression left;
   Expression right;
@@ -61,10 +58,9 @@ class AssignmentExpression {
 
 class BinaryExpression {
  public:
-  BinaryExpression(std::string file_name, SourceLocation loc, BinaryOperator op,
-                   Expression left, Expression right);
+  BinaryExpression(SourceLocation loc, BinaryOperator op, Expression left,
+                   Expression right);
 
-  std::string file_name;
   SourceLocation loc;
   BinaryOperator op;
   Expression left;
@@ -73,20 +69,17 @@ class BinaryExpression {
 
 class BlockStatement {
  public:
-  BlockStatement(std::string file_name, SourceLocation loc,
-                 std::vector<Statement> body);
+  BlockStatement(SourceLocation loc, std::vector<Statement> body);
 
-  std::string file_name;
   SourceLocation loc;
   std::vector<Statement> body;
 };
 
 class CallExpression {
  public:
-  CallExpression(std::string file_name, SourceLocation loc, Expression callee,
+  CallExpression(SourceLocation loc, Expression callee,
                  std::vector<Expression> arguments);
 
-  std::string file_name;
   SourceLocation loc;
   Expression callee;
   std::vector<Expression> arguments;
@@ -94,20 +87,18 @@ class CallExpression {
 
 class ExpressionStatement {
  public:
-  ExpressionStatement(std::string file_name, SourceLocation loc,
-                      Expression expression);
+  ExpressionStatement(SourceLocation loc, Expression expression);
 
   Expression expression_;
-  std::string file_name;
+
   SourceLocation loc;
 };
 
 class ForInStatement {
  public:
-  ForInStatement(std::string file_name, SourceLocation loc,
-                 IdentifierVariant left, Expression right, Statement body);
+  ForInStatement(SourceLocation loc, IdentifierVariant left, Expression right,
+                 Statement body);
 
-  std::string file_name;
   SourceLocation loc;
   IdentifierVariant left;
   Expression right;
@@ -116,41 +107,44 @@ class ForInStatement {
 
 class FunctionDeclaration {
  public:
-  FunctionDeclaration(std::string file_name, SourceLocation loc,
-                      IdentifierVariant id,
+  FunctionDeclaration(SourceLocation loc, IdentifierVariant id,
                       std::vector<IdentifierVariant> params, Statement body);
 
-  std::string file_name;
   SourceLocation loc;
   IdentifierVariant id;
   std::vector<IdentifierVariant> params;
   Statement body;
 };
 
+class FunctionExpression {
+ public:
+  FunctionExpression(SourceLocation loc, std::vector<IdentifierVariant> params,
+                     Statement body);
+  SourceLocation loc;
+  std::vector<IdentifierVariant> params;
+  Statement body;
+};
+
 class Identifier {
  public:
-  Identifier(std::string file_name, SourceLocation loc, std::string name);
+  Identifier(SourceLocation loc, std::string name);
 
-  std::string file_name;
   SourceLocation loc;
   std::string name;
 };
 
 class Literal {
  public:
-  Literal(std::string file_name, SourceLocation loc, Value value);
+  Literal(SourceLocation loc, Value value);
 
-  std::string file_name;
   SourceLocation loc;
   Value value;
 };
 
 class MemberExpression {
  public:
-  MemberExpression(std::string file_name, SourceLocation loc, Expression object,
-                   Expression literal);
+  MemberExpression(SourceLocation loc, Expression object, Expression literal);
 
-  std::string file_name;
   SourceLocation loc;
   Expression object;
   Expression property;
@@ -166,40 +160,33 @@ class Property {
 
 class ObjectExpression {
  public:
-  ObjectExpression(std::string file_name, SourceLocation loc,
-                   std::vector<Property> properties);
+  ObjectExpression(SourceLocation loc, std::vector<Property> properties);
 
-  std::string file_name;
   SourceLocation loc;
   std::vector<Property> properties;
 };
 
 class Program {
  public:
-  Program(std::string file_name, SourceLocation loc,
-          std::vector<Statement> body);
+  Program(SourceLocation loc, std::vector<Statement> body);
 
-  std::string file_name;
   SourceLocation loc;
   std::vector<Statement> body;
 };
 
 class ReturnStatement {
  public:
-  ReturnStatement(std::string file_name, SourceLocation loc,
-                  std::optional<Expression> argument);
+  ReturnStatement(SourceLocation loc, std::optional<Expression> argument);
 
-  std::string file_name;
   SourceLocation loc;
   std::optional<Expression> argument_;
 };
 
 class VariableDeclaration {
  public:
-  VariableDeclaration(std::string file_name, SourceLocation loc,
+  VariableDeclaration(SourceLocation loc,
                       std::vector<VariableDeclaratorVariant> declarations);
 
-  std::string file_name;
   SourceLocation loc;
   std::string kind{"var"};
   std::vector<VariableDeclaratorVariant> declarations;
@@ -207,10 +194,8 @@ class VariableDeclaration {
 
 class VariableDeclarator {
  public:
-  VariableDeclarator(std::string file_name, SourceLocation loc,
-                     IdentifierVariant id, Expression init);
+  VariableDeclarator(SourceLocation loc, IdentifierVariant id, Expression init);
 
-  std::string file_name;
   SourceLocation loc;
   IdentifierVariant id;
   Expression init;
@@ -218,10 +203,8 @@ class VariableDeclarator {
 
 class WhileStatement {
  public:
-  WhileStatement(std::string file_name, SourceLocation loc,
-                 Expression condition, Statement body);
+  WhileStatement(SourceLocation loc, Expression condition, Statement body);
 
-  std::string file_name;
   SourceLocation loc;
   Expression condition;
   Statement body;
@@ -229,10 +212,9 @@ class WhileStatement {
 
 class IfStatement {
  public:
-  IfStatement(std::string file_name, SourceLocation loc, Expression test,
-              Statement consequent, std::optional<Statement> alternate);
+  IfStatement(SourceLocation loc, Expression test, Statement consequent,
+              std::optional<Statement> alternate);
 
-  std::string file_name;
   SourceLocation loc;
   Expression test;
   Statement consquent;

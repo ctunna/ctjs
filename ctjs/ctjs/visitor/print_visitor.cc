@@ -178,4 +178,15 @@ void PrintVisitor::operator()(
   }
   std::cout << std::string(indent_, ' ') << "])";
 }
+
+void PrintVisitor::operator()(util::Box<ast::FunctionExpression>& decl) const {
+  std::cout << std::string(indent_, ' ') << "FunctionExpression(\n";
+  for (auto& param : decl->params) {
+    std::visit(PrintVisitor{indent_ + 2}, param);
+    std::cout << "\n";
+  }
+  std::visit(PrintVisitor{indent_ + 2}, decl->body);
+  std::cout << "\n" << std::string(indent_, ' ') << ")";
+}
+
 }  // namespace ctjs

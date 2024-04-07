@@ -14,14 +14,16 @@ class Environment;
 
 class Function : public Object {
  public:
-  Function(ast::FunctionDeclaration* declaration, Environment* closure);
+  Function(std::vector<ast::IdentifierVariant>* params, ast::Statement* body,
+           Environment* closure);
 
   Value call(std::vector<Value> args);
 
   auto to_string() const -> std::string override;
 
  private:
-  ast::FunctionDeclaration* declaration_;
+  std::vector<ast::IdentifierVariant>* params_;
+  ast::Statement* body_;
   Environment* closure_;
 };
 
