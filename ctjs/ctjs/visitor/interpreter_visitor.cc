@@ -137,8 +137,8 @@ auto InterpreterVisitor::operator()(
 
 auto InterpreterVisitor::operator()(util::Box<ast::CallExpression>& expression)
     -> Value {
-  auto expr{std::visit(*this, expression->callee)};
-  auto obj{expr.get<std::shared_ptr<Object>>()};
+  auto val{std::visit(*this, expression->callee)};
+  auto obj{val.get<std::shared_ptr<Object>>()};
   auto callee{std::dynamic_pointer_cast<Function>(obj)};
   std::vector<Value> args;
   for (auto& arg : expression->arguments) {

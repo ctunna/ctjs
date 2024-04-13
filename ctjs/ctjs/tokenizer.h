@@ -53,9 +53,13 @@ class Tokenizer {
 
   auto is_line_comment() -> bool;
 
-  size_t position_{0};
-  size_t line_{1};
-  size_t col_{1};
+  struct State {
+    size_t position{0};
+    size_t line{1};
+    size_t col_start{0};
+  };
+
+  State state_;
   std::string source_;
 };
 }  // namespace ctjs

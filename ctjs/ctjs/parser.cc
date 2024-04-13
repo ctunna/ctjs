@@ -404,7 +404,10 @@ auto Parser::parse_expression() -> ast::Expression {
 auto Parser::consume_token(TokenType type) -> Token {
   auto token{tokenizer_.next()};
   if (token.type != type) {
-    throw std::runtime_error("Expected token of type " + to_string(type));
+    throw std::runtime_error("Expected token of type '" + to_token(type) +
+                             "' but found '" + token.value + "' (" +
+                             std::to_string(token.line) + ", " +
+                             std::to_string(token.col) + ")");
   }
   return token;
 }
