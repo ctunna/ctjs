@@ -1,7 +1,5 @@
 #pragma once
 
-#include <memory>
-
 #include "ctjs/ast/ast.h"
 #include "ctjs/runtime/environment.h"
 #include "ctjs/runtime/value.h"

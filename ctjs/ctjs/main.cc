@@ -1,6 +1,4 @@
-#include <fstream>
 #include <iostream>
-#include <streambuf>
 #include <string>
 #include <variant>
 
@@ -8,14 +6,10 @@
 #include "ctjs/interpreter.h"
 #include "ctjs/parser.h"
 #include "ctjs/runtime/environment.h"
-#include "ctjs/tokenizer.h"
 #include "ctjs/util/file/read_all_text.h"
-#include "ctjs/visitor/interpreter_visitor.h"
 #include "ctjs/visitor/print_visitor.h"
 
-using namespace ctjs;
-
-int main(int argc, char** argv) {
+auto main(int argc, char** argv) -> int {
   try {
     auto flag{std::string(argv[1])};
     if (flag == "-h") {
@@ -31,13 +25,12 @@ int main(int argc, char** argv) {
       if (argc < 3) {
         throw std::runtime_error{"'-p' option requires a filename argument."};
       }
-      Parser parser{argv[2], util::file::read_all_text(argv[2])};
-      ast::AstNode program{parser.parse()};
-      std::visit(PrintVisitor{0}, program);
+      ctjs::Parser parser{argv[2], ctjs::util::file::read_all_text(argv[2])};
+      ctjs::ast::AstNode program{parser.parse()};
+      std::visit(ctjs::PrintVisitor{0}, program);
     } else {
-      Interpreter interpreter;
-      Environment environment;
-      interpreter.eval(environment, util::file::read_all_text(argv[1]));
+      ctjs::Environment environment;
+      ctjs::Interpreter::eval(environment, ctjs::util::file::read_all_text(argv[1]));
       environment.print();
     }
   } catch (std::exception const& e) {

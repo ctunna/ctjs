@@ -2,6 +2,8 @@
 
 #include <regex>
 
+#include "ctjs/token_type.h"
+
 using ctjs::ast::TokenType;
 
 namespace ctjs {
@@ -24,12 +26,13 @@ static std::unordered_map<std::string, TokenType> const one_char_tokens{
     {"<", TokenType::LessThan},     {"!", TokenType::ExclamationMark},
     {"?", TokenType::QuestionMark}, {":", TokenType::Colon}};
 static std::unordered_map<std::string, TokenType> const keyword_tokens{
-    {"var", TokenType::Var},       {"let", TokenType::Let},
-    {"const", TokenType::Const},   {"if", TokenType::If},
-    {"else", TokenType::Else},     {"function", TokenType::Function},
-    {"return", TokenType::Return}, {"while", TokenType::While},
-    {"for", TokenType::For},       {"in", TokenType::In},
-    {"new", TokenType::New}};
+    {"var", TokenType::Var},         {"let", TokenType::Let},
+    {"const", TokenType::Const},     {"if", TokenType::If},
+    {"else", TokenType::Else},       {"function", TokenType::Function},
+    {"return", TokenType::Return},   {"while", TokenType::While},
+    {"for", TokenType::For},         {"in", TokenType::In},
+    {"new", TokenType::New},         {"false", TokenType::BoolLiteral},
+    {"true", TokenType::BoolLiteral}};
 
 Tokenizer::Tokenizer(const std::string_view source) : source_(source) {}
 
@@ -71,7 +74,8 @@ auto Tokenizer::next() -> Token {
     if (std::regex_match(str, re) ||
         (str == token && state_.position + token.size() == source_.size())) {
       state_.position += token.size();
-      return {token_type, token, state_.line, state_.position - state_.col_start};
+      return {token_type, token, state_.line,
+              state_.position - state_.col_start};
     }
   }
 
@@ -82,28 +86,33 @@ auto Tokenizer::next() -> Token {
     for (const auto &[token, token_type] : map) {
       if (source_.substr(state_.position, token.size()) == token) {
         state_.position += token.size();
-        return {token_type, token, state_.line, state_.position - state_.col_start};
+        return {token_type, token, state_.line,
+                state_.position - state_.col_start};
       }
     }
   }
 
   if (is_digit()) {
     auto number{consume_numeric_literal()};
-    return {TokenType::NumericLiteral, number, state_.line, state_.position - state_.col_start};
+    return {TokenType::NumericLiteral, number, state_.line,
+            state_.position - state_.col_start};
   }
 
   if (is_identifier_char()) {
     auto identifier{consume_identifier()};
-    return {TokenType::Identifier, identifier, state_.line, state_.position - state_.col_start};
+    return {TokenType::Identifier, identifier, state_.line,
+            state_.position - state_.col_start};
   }
 
   if (is_char('"')) {
     auto str{consume_string_literal()};
-    return {TokenType::StringLiteral, str, state_.line, state_.position - state_.col_start};
+    return {TokenType::StringLiteral, str, state_.line,
+            state_.position - state_.col_start};
   }
 
   if (state_.position >= source_.size()) {
-    return {TokenType::Eof, "", state_.line, state_.position - state_.col_start};
+    return {TokenType::Eof, "", state_.line,
+            state_.position - state_.col_start};
   }
 
   throw std::runtime_error("Unknown token");
@@ -111,7 +120,9 @@ auto Tokenizer::next() -> Token {
 
 auto Tokenizer::line() -> size_t { return state_.line; }
 
-auto Tokenizer::column() -> size_t { return state_.position - state_.col_start; }
+auto Tokenizer::column() -> size_t {
+  return state_.position - state_.col_start;
+}
 
 auto Tokenizer::consume_string_literal() -> std::string {
   std::string str;
@@ -174,7 +185,9 @@ auto Tokenizer::is_digit() -> bool {
   return source_[state_.position] >= '0' && source_[state_.position] <= '9';
 }
 
-auto Tokenizer::is_char(char c) -> bool { return source_[state_.position] == c; }
+auto Tokenizer::is_char(char c) -> bool {
+  return source_[state_.position] == c;
+}
 
 auto Tokenizer::is_whitespace() -> bool {
   return source_[state_.position] == ' ' || source_[state_.position] == '\t' ||

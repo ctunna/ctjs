@@ -1,11 +1,6 @@
 #include "ctjs/runtime/value.h"
 
-#include <algorithm>
-
 #include "ctjs/runtime/coerce.h"
-#include "ctjs/util/ranges/keys_view.h"
-
-namespace ranges = ctjs::util::ranges;
 
 namespace ctjs {
 template <typename T, typename U>
@@ -38,13 +33,13 @@ struct PlusVisitor {
     using R = std::decay_t<decltype(a)>;
     auto coerce{Coerce<R>{}};
     if constexpr (HasPlusOperator<decltype(a), decltype(coerce(b))>) {
-      return a + coerce(b);
+      return Value(a + coerce(b));
     }
     throw std::runtime_error("Invalid addition");
   }
   auto operator()(auto const& a, std::string const& b) const -> Value {
     auto coerce{Coerce<std::string>{}};
-    return coerce(a) + b;
+    return Value(coerce(a) + b);
   }
 };
 
@@ -53,7 +48,7 @@ struct MinusVisitor {
     using R = std::decay_t<decltype(a)>;
     auto coerce{Coerce<R>{}};
     if constexpr (HasMinusOperator<decltype(a), decltype(coerce(b))>) {
-      return a - coerce(b);
+      return Value(a - coerce(b));
     }
     throw std::runtime_error("Invalid subtraction");
   }
@@ -64,7 +59,7 @@ struct MultiplyVisitor {
     using R = std::decay_t<decltype(a)>;
     auto coerce{Coerce<R>{}};
     if constexpr (HasMultiplyOperator<decltype(a), decltype(coerce(b))>) {
-      return a * coerce(b);
+      return Value(a * coerce(b));
     }
     throw std::runtime_error("Invalid multiplication");
   }

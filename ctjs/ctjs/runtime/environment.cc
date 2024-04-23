@@ -9,10 +9,10 @@ auto Environment::get(std::string const& name) const -> Value {
   if (scope_.contains(name)) {
     return scope_.at(name);
   }
-  if (parent_) {
+  if (parent_ != nullptr) {
     return parent_->get(name);
   }
-  return Value();
+  return {};
 }
 
 void Environment::define(std::string const& name, Value value) {
@@ -22,7 +22,7 @@ void Environment::define(std::string const& name, Value value) {
 void Environment::set(std::string const& name, Value value) {
   if (scope_.contains(name)) {
     scope_.insert_or_assign(name, value);
-  } else if (parent_) {
+  } else if (parent_ != nullptr) {
     parent_->set(name, value);
   } else {
     throw std::runtime_error("Undefined variable: " + name);

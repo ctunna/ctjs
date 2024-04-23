@@ -1,13 +1,11 @@
 #include "ctjs/parser.h"
 
-#include <iostream>
-
 using ctjs::ast::BinaryOperator;
 using ctjs::ast::TokenType;
 
 namespace ctjs {
 
-ast::BinaryOperator to_binary_operator(TokenType type) {
+auto to_binary_operator(TokenType type) -> ast::BinaryOperator {
   switch (type) {
     case TokenType::Plus:
       return BinaryOperator::Add;
@@ -32,7 +30,7 @@ ast::BinaryOperator to_binary_operator(TokenType type) {
   }
 }
 
-bool is_binary_operator(TokenType type) {
+auto is_binary_operator(TokenType type) -> bool {
   switch (type) {
     case TokenType::Plus:
     case TokenType::Minus:
@@ -106,7 +104,7 @@ auto Parser::parse_function_declaration()
   consume_token(TokenType::ParenOpen);
   std::vector<ast::IdentifierVariant> params;
   while (!expect_token(TokenType::ParenClose)) {
-    params.push_back(parse_identifier());
+    params.emplace_back(parse_identifier());
     if (expect_token(TokenType::Comma)) {
       consume_token(TokenType::Comma);
     }
@@ -199,14 +197,6 @@ auto Parser::parse_variable_declaration()
   return ast::VariableDeclaration({file_name_, start, end}, declarators);
 }
 
-auto Parser::optional_parse_identifier()
-    -> std::optional<util::Box<ast::Identifier>> {
-  if (!expect_token(TokenType::Identifier)) {
-    return {};
-  }
-  return parse_identifier();
-}
-
 auto Parser::parse_identifier() -> util::Box<ast::Identifier> {
   auto start{position()};
   auto token{consume_token(TokenType::Identifier)};
@@ -214,44 +204,25 @@ auto Parser::parse_identifier() -> util::Box<ast::Identifier> {
   return ast::Identifier({file_name_, start, end}, token.value);
 }
 
-auto Parser::optional_parse_numeric_literal()
-    -> std::optional<util::Box<ast::Literal>> {
-  auto token{tokenizer_.peek()};
-  if (!expect_token(TokenType::NumericLiteral)) {
-    return {};
-  }
-  return parse_numeric_literal();
+auto Parser::parse_bool_literal() -> util::Box<ast::Literal> {
+  auto start{position()};
+  auto token{consume_token(TokenType::BoolLiteral)};
+  auto end{position()};
+  return ast::Literal({file_name_, start, end}, Value(token.value == "true"));
 }
 
 auto Parser::parse_numeric_literal() -> util::Box<ast::Literal> {
   auto start{position()};
   auto token{consume_token(TokenType::NumericLiteral)};
   auto end{position()};
-  return ast::Literal({file_name_, start, end}, std::stoi(token.value));
-}
-
-auto Parser::optional_parse_string_literal()
-    -> std::optional<util::Box<ast::Literal>> {
-  auto token{tokenizer_.peek()};
-  if (!expect_token(TokenType::StringLiteral)) {
-    return {};
-  }
-  return parse_string_literal();
+  return ast::Literal({file_name_, start, end}, Value(std::stoi(token.value)));
 }
 
 auto Parser::parse_string_literal() -> util::Box<ast::Literal> {
   auto start{position()};
   auto token{consume_token(TokenType::StringLiteral)};
   auto end{position()};
-  return ast::Literal({file_name_, start, end}, token.value);
-}
-
-auto Parser::optional_parse_array_expression()
-    -> std::optional<util::Box<ast::ArrayExpression>> {
-  if (!expect_token(TokenType::BracketOpen)) {
-    return {};
-  }
-  return parse_array_expression();
+  return ast::Literal({file_name_, start, end}, Value(token.value));
 }
 
 auto Parser::parse_array_expression() -> util::Box<ast::ArrayExpression> {
@@ -275,7 +246,7 @@ auto Parser::parse_function_expression() -> util::Box<ast::FunctionExpression> {
   consume_token(TokenType::ParenOpen);
   std::vector<ast::IdentifierVariant> params;
   while (!expect_token(TokenType::ParenClose)) {
-    params.push_back(parse_identifier());
+    params.emplace_back(parse_identifier());
     if (expect_token(TokenType::Comma)) {
       consume_token(TokenType::Comma);
     }
@@ -284,22 +255,6 @@ auto Parser::parse_function_expression() -> util::Box<ast::FunctionExpression> {
   auto body{parse_block_statement()};
   auto end{position()};
   return ast::FunctionExpression({file_name_, start, end}, params, body);
-}
-
-auto Parser::optional_parse_function_expression()
-    -> std::optional<util::Box<ast::FunctionExpression>> {
-  if (!expect_token(TokenType::Function)) {
-    return {};
-  }
-  return parse_function_expression();
-}
-
-auto Parser::optional_parse_object_expression()
-    -> std::optional<util::Box<ast::ObjectExpression>> {
-  if (!expect_token(TokenType::CurlyOpen)) {
-    return {};
-  }
-  return parse_object_expression();
 }
 
 auto Parser::parse_object_expression() -> util::Box<ast::ObjectExpression> {
@@ -320,85 +275,101 @@ auto Parser::parse_object_expression() -> util::Box<ast::ObjectExpression> {
   return ast::ObjectExpression{{file_name_, start, end}, properties};
 }
 
-auto Parser::parse_expression() -> ast::Expression {
+auto Parser::parse_secondary_expression(ast::Expression lhs)
+    -> ast::Expression {
   auto start{position()};
-  std::optional<ast::Expression> optional_expr{optional_parse_identifier()};
-
-  if (optional_expr && expect_token(TokenType::Equals)) {
-    consume_token(TokenType::Equals);
-    auto end{position()};
-    return ast::AssignmentExpression({file_name_, start, end}, *optional_expr,
-                                     parse_expression());
-  }
-
-  if (optional_expr && expect_token(TokenType::ParenOpen)) {
-    consume_token(TokenType::ParenOpen);
-    std::vector<ast::Expression> args;
-    while (!expect_token(TokenType::ParenClose)) {
-      args.push_back(parse_expression());
-      if (expect_token(TokenType::Comma)) {
-        consume_token(TokenType::Comma);
-      }
+  auto next{tokenizer_.next()};
+  switch (next.type) {
+    case TokenType::Plus:
+    case TokenType::Minus:
+    case TokenType::Asterisk:
+    case TokenType::Slash:
+    case TokenType::EqualsEquals:
+    case TokenType::LessThan:
+    case TokenType::LessThanEquals:
+    case TokenType::GreaterThan:
+    case TokenType::GreaterThanEquals:
+      return ast::BinaryExpression({file_name_, start, start},
+                                   to_binary_operator(next.type),
+                                   std::move(lhs), parse_expression());
+    case TokenType::Period: {
+      auto id{parse_identifier()};
+      auto prop{ast::Literal({file_name_, start, start}, Value(id->name))};
+      return ast::MemberExpression({file_name_, start, start}, std::move(lhs),
+                                   prop);
     }
-    consume_token(TokenType::ParenClose);
-    auto end{position()};
-    optional_expr =
-        ast::CallExpression({file_name_, start, end}, *optional_expr, args);
+    case TokenType::BracketOpen: {
+      auto expr{ast::MemberExpression({file_name_, start, start},
+                                      std::move(lhs), parse_expression())};
+      consume_token(TokenType::BracketClose);
+      return expr;
+    }
+    case TokenType::ParenOpen: {
+      std::vector<ast::Expression> arguments;
+      while (!expect_token(TokenType::ParenClose)) {
+        arguments.push_back(parse_expression());
+        if (expect_token(TokenType::Comma)) {
+          consume_token(TokenType::Comma);
+        }
+      }
+      consume_token(TokenType::ParenClose);
+      return ast::CallExpression({file_name_, start, start}, std::move(lhs),
+                                 arguments);
+    }
+    case TokenType::Equals: {
+      return ast::AssignmentExpression({file_name_, start, start},
+                                       std::move(lhs), parse_expression());
+    }
+    default:
+      throw std::runtime_error("Unknown secondary expression");
   }
+}
 
-  if (optional_expr && expect_token(TokenType::BracketOpen)) {
-    consume_token(TokenType::BracketOpen);
-    auto literal{parse_expression()};
-    consume_token(TokenType::BracketClose);
-    auto end{position()};
-    optional_expr = ast::MemberExpression({file_name_, start, end},
-                                          *optional_expr, literal);
-  }
-
-  if (optional_expr && expect_token(TokenType::Period)) {
-    consume_token(TokenType::Period);
-    auto id_start{position()};
-    auto identifier{parse_identifier()};
-    auto end{position()};
-    auto literal{ast::Literal({file_name_, id_start, end}, identifier->name)};
-    optional_expr = ast::MemberExpression({file_name_, start, end},
-                                          *optional_expr, literal);
-  }
-
-  if (!optional_expr) {
-    optional_expr = optional_parse_function_expression();
-  }
-
-  if (!optional_expr) {
-    optional_expr = optional_parse_array_expression();
-  }
-
-  if (!optional_expr) {
-    optional_expr = optional_parse_object_expression();
-  }
-
-  if (!optional_expr) {
-    optional_expr = optional_parse_numeric_literal();
-  }
-
-  if (!optional_expr) {
-    optional_expr = optional_parse_string_literal();
-  }
-
-  if (!optional_expr) {
-    throw std::runtime_error("Unknown expression");
-  }
-
-  auto expr{*optional_expr};
+auto Parser::parse_primary_expression() -> ast::Expression {
+  auto start{position()};
   auto next{tokenizer_.peek()};
-  if (is_binary_operator(next.type)) {
-    tokenizer_.next();
-    auto end{position()};
-    return ast::BinaryExpression({file_name_, start, end},
-                                 to_binary_operator(next.type), expr,
-                                 parse_expression());
+  switch (next.type) {
+    default:
+      throw std::runtime_error("Unknown primary expression");
+    case TokenType::Identifier:
+      return parse_identifier();
+    case TokenType::BoolLiteral:
+      return parse_bool_literal();
+    case TokenType::NumericLiteral:
+      return parse_numeric_literal();
+    case TokenType::StringLiteral:
+      return parse_string_literal();
+    case TokenType::BracketOpen:
+      return parse_array_expression();
+    case TokenType::CurlyOpen:
+      return parse_object_expression();
+    case TokenType::Function:
+      return parse_function_expression();
+    case TokenType::ParenOpen:
+      consume_token(TokenType::ParenOpen);
+      auto expression{parse_expression()};
+      consume_token(TokenType::ParenClose);
+      return expression;
+  }
+}
+
+auto Parser::parse_expression() -> ast::Expression {
+  auto expr{parse_primary_expression()};
+  while (match_secondary_expression()) {
+    expr = parse_secondary_expression(std::move(expr));
   }
   return expr;
+}
+
+auto Parser::match_secondary_expression() -> bool {
+  auto type{tokenizer_.peek().type};
+  return type == TokenType::Plus || type == TokenType::Minus ||
+         type == TokenType::Asterisk || type == TokenType::Slash ||
+         type == TokenType::EqualsEquals || type == TokenType::LessThan ||
+         type == TokenType::LessThanEquals || type == TokenType::GreaterThan ||
+         type == TokenType::GreaterThanEquals || type == TokenType::Period ||
+         type == TokenType::BracketOpen || type == TokenType::ParenOpen ||
+         type == TokenType::Equals;
 }
 
 auto Parser::consume_token(TokenType type) -> Token {

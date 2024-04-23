@@ -1,6 +1,5 @@
 #include "ctjs/visitor/interpreter_visitor.h"
 
-#include <iostream>
 #include <variant>
 
 #include "ctjs/runtime/array.h"
@@ -15,7 +14,7 @@ auto InterpreterVisitor::operator()(util::Box<ast::Program>& program) -> Value {
   for (auto& stmt : program->body) {
     std::visit(*this, stmt);
   }
-  return Value();
+  return {};
 }
 
 auto InterpreterVisitor::operator()(util::Box<ast::BlockStatement>& statement)
@@ -24,7 +23,7 @@ auto InterpreterVisitor::operator()(util::Box<ast::BlockStatement>& statement)
   for (auto& stmt : statement->body) {
     std::visit(InterpreterVisitor{&environment}, stmt);
   }
-  return Value();
+  return {};
 }
 
 auto InterpreterVisitor::operator()(util::Box<ast::ReturnStatement>& statement)
@@ -39,7 +38,7 @@ auto InterpreterVisitor::operator()(util::Box<ast::VariableDeclaration>& decl)
   for (auto& decl : decl->declarations) {
     std::visit(*this, decl);
   }
-  return Value();
+  return {};
 }
 
 auto InterpreterVisitor::operator()(util::Box<ast::VariableDeclarator>& decl)
@@ -55,10 +54,11 @@ auto InterpreterVisitor::operator()(util::Box<ast::IfStatement>& statement)
   auto test{std::visit(*this, statement->test)};
   if (static_cast<bool>(test)) {
     return std::visit(*this, statement->consquent);
-  } else if (statement->alternate) {
+  }
+  if (statement->alternate) {
     return std::visit(*this, *statement->alternate);
   }
-  return Value();
+  return {};
 }
 
 auto InterpreterVisitor::operator()(util::Box<ast::WhileStatement>& statement)
@@ -66,7 +66,7 @@ auto InterpreterVisitor::operator()(util::Box<ast::WhileStatement>& statement)
   while (static_cast<bool>(std::visit(*this, statement->condition))) {
     std::visit(*this, statement->body);
   }
-  return Value();
+  return {};
 }
 
 auto InterpreterVisitor::operator()(util::Box<ast::ForInStatement>& statement)
@@ -76,19 +76,20 @@ auto InterpreterVisitor::operator()(util::Box<ast::ForInStatement>& statement)
   Environment environment{environment_};
   for (auto const& [key, value] : obj->properties()) {
     auto id{std::get<util::Box<ast::Identifier>>(statement->left)};
-    environment.define(id->name, key);
+    environment.define(id->name, Value(key));
     std::visit(InterpreterVisitor{&environment}, statement->body);
   }
-  return Value();
+  return {};
 }
 
 auto InterpreterVisitor::operator()(util::Box<ast::FunctionDeclaration>& decl)
     -> Value {
   std::shared_ptr<Object> function{
       std::make_shared<Function>(&decl->params, &decl->body, environment_)};
+  Value value(function);
   auto id{std::get<util::Box<ast::Identifier>>(decl->id)};
-  environment_->define(id->name, function);
-  return function;
+  environment_->define(id->name, value);
+  return value;
 }
 
 auto InterpreterVisitor::operator()(
@@ -125,11 +126,11 @@ auto InterpreterVisitor::operator()(
     case ast::BinaryOperator::Mul:
       return left * right;
     case ast::BinaryOperator::Equal:
-      return left == right;
+      return Value(left == right);
     case ast::BinaryOperator::GreaterThan:
-      return left > right;
+      return Value(left > right);
     case ast::BinaryOperator::LessThan:
-      return left < right;
+      return Value(left < right);
     default:
       throw std::runtime_error("Unknown BinaryOperator");
   }
@@ -181,7 +182,7 @@ auto InterpreterVisitor::operator()(
     util::Box<ast::FunctionExpression>& expression) -> Value {
   std::shared_ptr<Object> function{std::make_shared<Function>(
       &expression->params, &expression->body, environment_)};
-  return function;
+  return Value(function);
 }
 
 }  // namespace ctjs

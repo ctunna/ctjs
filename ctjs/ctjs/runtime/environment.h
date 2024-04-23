@@ -1,12 +1,9 @@
 #pragma once
 
-#include <memory>
 #include <string>
 #include <unordered_map>
-#include <variant>
 
 #include "ctjs/runtime/value.h"
-#include "ctjs/util/box.h"
 
 namespace ctjs {
 class Environment {

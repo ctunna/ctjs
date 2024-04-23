@@ -1,6 +1,5 @@
 #pragma once
 
-#include <map>
 #include <memory>
 #include <string>
 #include <variant>
@@ -12,10 +11,10 @@ namespace ctjs {
 class Value {
  public:
   Value() = default;
-  Value(int value);
-  Value(bool value);
-  Value(std::string value);
-  Value(std::shared_ptr<Object> value);
+  explicit Value(int value);
+  explicit Value(bool value);
+  explicit Value(std::string value);
+  explicit Value(std::shared_ptr<Object> value);
 
   auto operator+(Value const& other) const -> Value;
   auto operator-(Value const& other) const -> Value;
@@ -32,7 +31,7 @@ class Value {
     return std::get<T>(value_);
   }
 
-  auto to_string() const -> std::string;
+  [[nodiscard]] auto to_string() const -> std::string;
 
  private:
   std::variant<int, bool, std::string, std::shared_ptr<Object>> value_;
