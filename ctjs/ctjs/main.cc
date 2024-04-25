@@ -5,7 +5,6 @@
 #include "ctjs/ast/ast.h"
 #include "ctjs/interpreter.h"
 #include "ctjs/parser.h"
-#include "ctjs/runtime/environment.h"
 #include "ctjs/util/file/read_all_text.h"
 #include "ctjs/visitor/print_visitor.h"
 
@@ -29,9 +28,8 @@ auto main(int argc, char** argv) -> int {
       ctjs::ast::AstNode program{parser.parse()};
       std::visit(ctjs::PrintVisitor{0}, program);
     } else {
-      ctjs::Environment environment;
-      ctjs::Interpreter::eval(environment, ctjs::util::file::read_all_text(argv[1]));
-      environment.print();
+      auto interpreter{ctjs::Interpreter{}};
+      interpreter.eval_file(argv[1]);
     }
   } catch (std::exception const& e) {
     std::cerr << "Error: " << e.what() << std::endl;

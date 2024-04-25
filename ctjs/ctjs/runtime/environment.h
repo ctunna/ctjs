@@ -10,7 +10,7 @@ class Environment {
  public:
   Environment() = default;
 
-  explicit Environment(Environment* parent);
+  explicit Environment(std::shared_ptr<Environment> parent);
 
   Environment(Environment const&) = default;
   Environment(Environment&&) = default;
@@ -26,6 +26,6 @@ class Environment {
 
  private:
   std::unordered_map<std::string, Value> scope_;
-  Environment* parent_{nullptr};
+  std::shared_ptr<Environment> parent_;
 };
 }  // namespace ctjs

@@ -1,9 +1,11 @@
 #include "ctjs/runtime/environment.h"
 
 #include <iostream>
+#include <memory>
 
 namespace ctjs {
-Environment::Environment(Environment* parent) : parent_(parent) {}
+Environment::Environment(std::shared_ptr<Environment> parent)
+    : parent_(std::move(parent)) {}
 
 auto Environment::get(std::string const& name) const -> Value {
   if (scope_.contains(name)) {

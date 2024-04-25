@@ -1,14 +1,16 @@
 #include "ctjs/visitor/interpreter_visitor.h"
 
+#include <memory>
 #include <variant>
 
 #include "ctjs/runtime/array.h"
-#include "ctjs/runtime/function.h"
+#include "ctjs/runtime/environment.h"
 #include "ctjs/runtime/return_exception.h"
+#include "ctjs/runtime/user_defined_function.h"
 
 namespace ctjs {
-InterpreterVisitor::InterpreterVisitor(Environment* environment)
-    : environment_(environment) {}
+InterpreterVisitor::InterpreterVisitor(std::shared_ptr<Environment> environment)
+    : environment_(std::move(environment)) {}
 
 auto InterpreterVisitor::operator()(util::Box<ast::Program>& program) -> Value {
   for (auto& stmt : program->body) {
@@ -19,9 +21,9 @@ auto InterpreterVisitor::operator()(util::Box<ast::Program>& program) -> Value {
 
 auto InterpreterVisitor::operator()(util::Box<ast::BlockStatement>& statement)
     -> Value {
-  Environment environment{environment_};
+  auto environment{std::make_shared<Environment>(environment_)};
   for (auto& stmt : statement->body) {
-    std::visit(InterpreterVisitor{&environment}, stmt);
+    std::visit(InterpreterVisitor{environment}, stmt);
   }
   return {};
 }
@@ -73,19 +75,19 @@ auto InterpreterVisitor::operator()(util::Box<ast::ForInStatement>& statement)
     -> Value {
   auto value{std::visit(*this, statement->right)};
   auto obj{value.get<std::shared_ptr<Object>>()};
-  Environment environment{environment_};
+  auto environment{std::make_shared<Environment>(environment_)};
   for (auto const& [key, value] : obj->properties()) {
     auto id{std::get<util::Box<ast::Identifier>>(statement->left)};
-    environment.define(id->name, Value(key));
-    std::visit(InterpreterVisitor{&environment}, statement->body);
+    environment->define(id->name, Value(key));
+    std::visit(InterpreterVisitor{environment}, statement->body);
   }
   return {};
 }
 
 auto InterpreterVisitor::operator()(util::Box<ast::FunctionDeclaration>& decl)
     -> Value {
-  std::shared_ptr<Object> function{
-      std::make_shared<Function>(&decl->params, &decl->body, environment_)};
+  std::shared_ptr<Object> function{std::make_shared<UserDefinedFunction>(
+      &decl->params, &decl->body, environment_)};
   Value value(function);
   auto id{std::get<util::Box<ast::Identifier>>(decl->id)};
   environment_->define(id->name, value);
@@ -180,7 +182,7 @@ auto InterpreterVisitor::operator()(
 
 auto InterpreterVisitor::operator()(
     util::Box<ast::FunctionExpression>& expression) -> Value {
-  std::shared_ptr<Object> function{std::make_shared<Function>(
+  std::shared_ptr<Object> function{std::make_shared<UserDefinedFunction>(
       &expression->params, &expression->body, environment_)};
   return Value(function);
 }

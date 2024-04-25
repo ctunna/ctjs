@@ -120,7 +120,7 @@ struct ToStringVisitor {
     return value ? "true" : "false";
   }
   auto operator()(std::string const& value) const -> std::string {
-    return "\"" + value + "\"";
+    return value;
   }
   auto operator()(std::shared_ptr<Object> const& value) const -> std::string {
     return value->to_string();

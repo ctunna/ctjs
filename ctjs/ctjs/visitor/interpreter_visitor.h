@@ -8,7 +8,7 @@
 namespace ctjs {
 class InterpreterVisitor {
  public:
-  explicit InterpreterVisitor(Environment* environment);
+  explicit InterpreterVisitor(std::shared_ptr<Environment> environment);
 
   auto operator()(util::Box<ast::Program>& program) -> Value;
 
@@ -33,7 +33,7 @@ class InterpreterVisitor {
   auto operator()(util::Box<ast::FunctionExpression>& expression) -> Value;
 
  private:
-  Environment* environment_;
+  std::shared_ptr<Environment> environment_;
 };
 
 }  // namespace ctjs
