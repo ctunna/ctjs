@@ -1,5 +1,6 @@
 #include "ctjs/interpreter.h"
 
+#include <cassert>
 #include <iostream>
 #include <memory>
 #include <vector>
@@ -12,15 +13,23 @@
 namespace ctjs {
 Interpreter::Interpreter() {
   auto console{std::make_shared<Object>()};
-  auto log{std::make_shared<BuiltinFunction>([](std::vector<Value> args) {
-    for (auto& arg : args) {
-      std::cout << arg.to_string() << ' ';
+  auto log{
+      std::make_shared<BuiltinFunction>([](const std::vector<Value>& args) {
+        for (const auto& arg : args) {
+          std::cout << arg.to_string() << ' ';
+        }
+        std::cout << '\n';
+        return Value();
+      })};
+  console->set_property("log", Value(log));
+  auto assert{std::make_shared<BuiltinFunction>([](std::vector<Value> args) {
+    if (!args.empty()) {
+      assert(args[0]);
     }
-    std::cout << '\n';
     return Value();
   })};
-  console->set_property("log", Value(log));
   environment_->define("console", Value(console));
+  environment_->define("assert", Value(assert));
 }
 
 void Interpreter::eval(std::string file_name, std::string_view code) {
