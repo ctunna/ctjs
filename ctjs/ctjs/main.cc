@@ -19,7 +19,7 @@ auto main(int argc, char** argv) -> int {
                 << "  <filename>  Execute the script from the provided file\n"
                 << "  -p <file>   Parse the file and print the AST without "
                    "executing"
-                << std::endl;
+                << '\n';
     } else if (flag == "-p") {
       if (argc < 3) {
         throw std::runtime_error{"'-p' option requires a filename argument."};
@@ -32,7 +32,7 @@ auto main(int argc, char** argv) -> int {
       interpreter.eval_file(argv[1]);
     }
   } catch (std::exception const& e) {
-    std::cerr << "Error: " << e.what() << std::endl;
+    std::cerr << "Error: " << e.what() << '\n';
     return 1;
   }
 

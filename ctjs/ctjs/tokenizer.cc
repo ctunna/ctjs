@@ -119,9 +119,9 @@ auto Tokenizer::next() -> Token {
   throw std::runtime_error("Unknown token");
 }
 
-auto Tokenizer::line() -> size_t { return state_.line; }
+auto Tokenizer::line() const -> size_t { return state_.line; }
 
-auto Tokenizer::column() -> size_t {
+auto Tokenizer::column() const -> size_t {
   return state_.position - state_.col_start;
 }
 
@@ -186,8 +186,8 @@ auto Tokenizer::is_digit() -> bool {
   return source_[state_.position] >= '0' && source_[state_.position] <= '9';
 }
 
-auto Tokenizer::is_char(char c) -> bool {
-  return source_[state_.position] == c;
+auto Tokenizer::is_char(char character) -> bool {
+  return source_[state_.position] == character;
 }
 
 auto Tokenizer::is_whitespace() -> bool {

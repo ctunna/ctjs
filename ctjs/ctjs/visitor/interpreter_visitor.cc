@@ -46,8 +46,8 @@ auto InterpreterVisitor::operator()(util::Box<ast::VariableDeclaration>& decl)
 auto InterpreterVisitor::operator()(util::Box<ast::VariableDeclarator>& decl)
     -> Value {
   auto value{std::visit(*this, decl->init)};
-  auto id{std::get<util::Box<ast::Identifier>>(decl->id)};
-  environment_->define(id->name, value);
+  auto identifier{std::get<util::Box<ast::Identifier>>(decl->id)};
+  environment_->define(identifier->name, value);
   return value;
 }
 
@@ -77,8 +77,8 @@ auto InterpreterVisitor::operator()(util::Box<ast::ForInStatement>& statement)
   auto obj{value.get<std::shared_ptr<Object>>()};
   auto environment{std::make_shared<Environment>(environment_)};
   for (auto const& [key, value] : obj->properties()) {
-    auto id{std::get<util::Box<ast::Identifier>>(statement->left)};
-    environment->define(id->name, Value(key));
+    auto identifier{std::get<util::Box<ast::Identifier>>(statement->left)};
+    environment->define(identifier->name, Value(key));
     std::visit(InterpreterVisitor{environment}, statement->body);
   }
   return {};
@@ -89,8 +89,8 @@ auto InterpreterVisitor::operator()(util::Box<ast::FunctionDeclaration>& decl)
   std::shared_ptr<Object> function{std::make_shared<UserDefinedFunction>(
       &decl->params, &decl->body, environment_)};
   Value value(function);
-  auto id{std::get<util::Box<ast::Identifier>>(decl->id)};
-  environment_->define(id->name, value);
+  auto identifier{std::get<util::Box<ast::Identifier>>(decl->id)};
+  environment_->define(identifier->name, value);
   return value;
 }
 
@@ -111,8 +111,8 @@ auto InterpreterVisitor::operator()(util::Box<ast::ArrayExpression>& expression)
 auto InterpreterVisitor::operator()(
     util::Box<ast::AssignmentExpression>& expression) -> Value {
   auto value{std::visit(*this, expression->right)};
-  auto id{std::get<util::Box<ast::Identifier>>(expression->left)};
-  environment_->set(id->name, value);
+  auto identifier{std::get<util::Box<ast::Identifier>>(expression->left)};
+  environment_->set(identifier->name, value);
   return value;
 }
 
@@ -154,8 +154,8 @@ auto InterpreterVisitor::operator()(util::Box<ast::CallExpression>& expression)
   }
 }
 
-auto InterpreterVisitor::operator()(util::Box<ast::Identifier>& id) -> Value {
-  return environment_->get(id->name);
+auto InterpreterVisitor::operator()(util::Box<ast::Identifier>& identifier) -> Value {
+  return environment_->get(identifier->name);
 }
 
 auto InterpreterVisitor::operator()(util::Box<ast::Literal>& literal) -> Value {

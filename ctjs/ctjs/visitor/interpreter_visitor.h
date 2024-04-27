@@ -26,7 +26,7 @@ class InterpreterVisitor {
   auto operator()(util::Box<ast::AssignmentExpression>& expression) -> Value;
   auto operator()(util::Box<ast::BinaryExpression>& expression) -> Value;
   auto operator()(util::Box<ast::CallExpression>& expression) -> Value;
-  auto operator()(util::Box<ast::Identifier>& id) -> Value;
+  auto operator()(util::Box<ast::Identifier>& identifier) -> Value;
   auto operator()(util::Box<ast::Literal>& literal) -> Value;
   auto operator()(util::Box<ast::MemberExpression>& expression) -> Value;
   auto operator()(util::Box<ast::ObjectExpression>& expression) -> Value;

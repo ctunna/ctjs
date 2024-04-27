@@ -10,7 +10,7 @@ namespace ctjs {
 
 class Tokenizer {
  public:
-  Tokenizer(std::string_view source);
+  explicit Tokenizer(std::string_view source);
 
   Tokenizer(const Tokenizer &) = delete;
   Tokenizer(Tokenizer &&) = delete;
@@ -25,9 +25,9 @@ class Tokenizer {
 
   auto next() -> Token;
 
-  auto line() -> size_t;
+  [[nodiscard]] auto line() const -> size_t;
 
-  auto column() -> size_t;
+  [[nodiscard]] auto column() const -> size_t;
 
  private:
   auto consume_string_literal() -> std::string;
@@ -44,7 +44,7 @@ class Tokenizer {
 
   auto is_digit() -> bool;
 
-  auto is_char(char c) -> bool;
+  auto is_char(char character) -> bool;
 
   auto is_whitespace() -> bool;
 

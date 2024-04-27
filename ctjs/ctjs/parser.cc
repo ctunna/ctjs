@@ -293,8 +293,8 @@ auto Parser::parse_secondary_expression(ast::Expression lhs)
                                    to_binary_operator(next.type),
                                    std::move(lhs), parse_expression());
     case TokenType::Period: {
-      auto id{parse_identifier()};
-      auto prop{ast::Literal({file_name_, start, start}, Value(id->name))};
+      auto identifier{parse_identifier()};
+      auto prop{ast::Literal({file_name_, start, start}, Value(identifier->name))};
       return ast::MemberExpression({file_name_, start, start}, std::move(lhs),
                                    prop);
     }
