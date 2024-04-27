@@ -1,6 +1,7 @@
 #include "ctjs/runtime/array.h"
 
 #include <algorithm>
+#include <vector>
 
 #include "ctjs/runtime/value.h"
 #include "ctjs/util/string/join.h"

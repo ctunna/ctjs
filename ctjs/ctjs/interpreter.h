@@ -2,7 +2,9 @@
 
 #include <memory>
 #include <string_view>
+#include <vector>
 
+#include "ctjs/ast/ast.h"
 #include "ctjs/runtime/environment.h"
 
 namespace ctjs {
@@ -16,6 +18,8 @@ class Interpreter {
 
  private:
   std::shared_ptr<Environment> globals_{std::make_shared<Environment>()};
-  std::shared_ptr<Environment> environment_{std::make_shared<Environment>(globals_)};
+  std::shared_ptr<Environment> environment_{
+      std::make_shared<Environment>(globals_)};
+  std::vector<ctjs::ast::AstNode> runspace_{};
 };
 }  // namespace ctjs

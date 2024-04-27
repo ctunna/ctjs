@@ -12,8 +12,16 @@
       "MIMode": "gdb",
       "program": "${workspaceFolder}/build/ctjs",
       "args": [
-        "index.js"
+        "test.js"
       ],
+    },
+    {
+      "name": "Debug GDB (Test)",
+      "type": "cppdbg",
+      "cwd": "${workspaceFolder}/build/",
+      "request": "launch",
+      "MIMode": "gdb",
+      "program": "${workspaceFolder}/build/tests/tests"
     },
     {
       "name": "Debug",

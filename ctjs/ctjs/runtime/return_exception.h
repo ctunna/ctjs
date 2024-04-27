@@ -1,13 +1,15 @@
 #pragma once
 
+#include <utility>
+
 #include "ctjs/runtime/value.h"
 
 namespace ctjs {
 class ReturnException : public std::exception {
  public:
-  ReturnException(Value value) : value_(value) {}
+  explicit ReturnException(Value value) : value_(std::move(value)) {}
 
-  Value value() const { return value_; }
+  [[nodiscard]] auto value() const -> Value { return value_; }
 
  private:
   Value value_;

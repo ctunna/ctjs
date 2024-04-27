@@ -22,12 +22,13 @@ Interpreter::Interpreter() {
         return Value();
       })};
   console->set_property("log", Value(log));
-  auto assert{std::make_shared<BuiltinFunction>([](std::vector<Value> args) {
-    if (!args.empty()) {
-      assert(args[0]);
-    }
-    return Value();
-  })};
+  auto assert{
+      std::make_shared<BuiltinFunction>([](const std::vector<Value>& args) {
+        if (!args.empty()) {
+          assert(args[0]);
+        }
+        return Value();
+      })};
   environment_->define("console", Value(console));
   environment_->define("assert", Value(assert));
 }
@@ -35,13 +36,14 @@ Interpreter::Interpreter() {
 void Interpreter::eval(std::string file_name, std::string_view code) {
   Parser parser{std::move(file_name), code};
   InterpreterVisitor visitor{environment_};
-  ctjs::ast::AstNode program{parser.parse()};
-  std::visit(visitor, program);
+  runspace_.emplace_back(parser.parse());
+  std::visit(visitor, runspace_.back());
 }
 
 void Interpreter::eval(std::string_view code) { return eval("REPL", code); }
 
 void Interpreter::eval_file(const std::string& file_name) {
-  eval(file_name, util::file::read_all_text(file_name));
+  auto code{util::file::read_all_text(file_name)};
+  eval(file_name, code);
 }
 }  // namespace ctjs

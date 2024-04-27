@@ -1,6 +1,8 @@
 #include "ctjs/runtime/object.h"
 
 #include <algorithm>
+#include <string>
+#include <vector>
 
 #include "ctjs/runtime/value.h"
 #include "ctjs/util/string/join.h"
@@ -9,7 +11,7 @@ namespace ctjs {
 auto Object::get_property(const std::string_view name) -> Value {
   auto it = properties_.find(std::string(name));
   if (it == properties_.end()) {
-    return Value();
+    return {};
   }
   return it->second;
 }

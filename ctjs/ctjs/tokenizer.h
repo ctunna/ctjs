@@ -1,24 +1,21 @@
 #pragma once
 
-#include <istream>
 #include <string>
 #include <string_view>
-#include <unordered_map>
 #include <vector>
 
 #include "ctjs/token.h"
-#include "ctjs/token_type.h"
 
 namespace ctjs {
 
 class Tokenizer {
  public:
-  Tokenizer(const std::string_view source);
+  Tokenizer(std::string_view source);
 
   Tokenizer(const Tokenizer &) = delete;
   Tokenizer(Tokenizer &&) = delete;
-  Tokenizer &operator=(const Tokenizer &) = delete;
-  Tokenizer &operator=(Tokenizer &&) = delete;
+  auto operator=(const Tokenizer &) -> Tokenizer & = delete;
+  auto operator=(Tokenizer &&) -> Tokenizer & = delete;
 
   auto ready() -> bool;
 

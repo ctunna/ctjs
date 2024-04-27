@@ -1,6 +1,7 @@
 #include "ctjs/tokenizer.h"
 
 #include <regex>
+#include <unordered_map>
 
 #include "ctjs/token_type.h"
 

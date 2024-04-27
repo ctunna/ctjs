@@ -1,5 +1,6 @@
 #pragma once
 
+#include <stdexcept>
 #include <string>
 
 namespace ctjs::ast {
@@ -28,7 +29,7 @@ enum class BinaryOperator {
   In,
 };
 
-inline std::string to_symbol(BinaryOperator op) {
+inline auto to_symbol(BinaryOperator op) -> std::string {
   switch (op) {
     case BinaryOperator::Add:
       return "+";

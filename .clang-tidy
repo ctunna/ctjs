@@ -8,5 +8,5 @@ Checks: >
   -google-upgrade-googletest-case,
   -readability-magic-numbers,
 FormatStyle: file
-HeaderFilterRegex: '(/mg/mg/|/smg/smg/|/util/util/)'
+HeaderFilterRegex: '(/ctjs/)'
 WarningsAsErrors: '*'
