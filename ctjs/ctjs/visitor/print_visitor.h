@@ -6,7 +6,7 @@
 namespace ctjs {
 class PrintVisitor {
  public:
-  PrintVisitor(int indent = 0) : indent_(indent) {}
+  explicit PrintVisitor(int indent = 0) : indent_(indent) {}
 
   void operator()(util::Box<ast::Program>& program) const;
 
@@ -24,7 +24,7 @@ class PrintVisitor {
   void operator()(util::Box<ast::AssignmentExpression>& expression) const;
   void operator()(util::Box<ast::BinaryExpression>& expression) const;
   void operator()(util::Box<ast::CallExpression>& expression) const;
-  void operator()(util::Box<ast::Identifier>& id) const;
+  void operator()(util::Box<ast::Identifier>& identifier) const;
   void operator()(util::Box<ast::Literal>& literal) const;
   void operator()(util::Box<ast::MemberExpression>& expression) const;
   void operator()(util::Box<ast::ObjectExpression>& expression) const;

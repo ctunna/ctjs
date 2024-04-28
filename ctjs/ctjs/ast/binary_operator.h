@@ -29,8 +29,8 @@ enum class BinaryOperator {
   In,
 };
 
-inline auto to_symbol(BinaryOperator op) -> std::string {
-  switch (op) {
+inline auto to_symbol(BinaryOperator oper) -> std::string {
+  switch (oper) {
     case BinaryOperator::Add:
       return "+";
     case BinaryOperator::Sub:

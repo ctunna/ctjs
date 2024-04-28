@@ -12,7 +12,12 @@ function expect(value) {
   return {
     toBe: function (expected) {
       assert(value == expected);
+    },
+    toBeTrue: function(expected) {
+      assert(expected == true);
+    },
+    toBeFalse: function(expected) {
+      assert(expected == false);
     }
   };
 }
-

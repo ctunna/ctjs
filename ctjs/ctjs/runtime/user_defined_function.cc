@@ -17,8 +17,8 @@ UserDefinedFunction::UserDefinedFunction(
 auto UserDefinedFunction::call(std::vector<Value> args) -> Value {
   auto environment{std::make_shared<Environment>(closure_)};
   for (size_t i = 0; i < params_->size(); ++i) {
-    auto id{std::get<util::Box<ast::Identifier>>((*params_)[i])};
-    environment->define(id->name, i < args.size() ? args[i] : Value());
+    auto identifier{std::get<util::Box<ast::Identifier>>((*params_)[i])};
+    environment->define(identifier->name, i < args.size() ? args[i] : Value());
   }
   return std::visit(InterpreterVisitor{environment}, *body_);
 }

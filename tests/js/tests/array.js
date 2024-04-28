@@ -1,29 +1,20 @@
 describe("arrays", function () {
   test("empty array", function () {
-    var arr = [];
-    var total = 0;
-    for (var _ in arr) {
-      total = total + 1;
-    }
-    expect(total).toBe(0);
+    expect(Object.length([])).toBe(0);
   });
 
   test("single element", function () {
     var arr = [1];
-    var total = 0;
-    for (var index in arr) {
-      total = total + arr[index];
-    }
-    expect(total).toBe(1);
+    expect(Object.length(arr)).toBe(1);
+    expect(arr[0]).toBe(1);
   });
 
   test("multiple elements", function () {
     var arr = [1, 2, 3];
-    var total = 0;
-    for (var index in arr) {
-      total = total + arr[index];
-    }
-    expect(total).toBe(6);
+    expect(Object.length(arr)).toBe(3);
+    expect(arr[0]).toBe(1);
+    expect(arr[1]).toBe(2);
+    expect(arr[2]).toBe(3);
   });
 });
 

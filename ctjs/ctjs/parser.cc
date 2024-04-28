@@ -1,5 +1,7 @@
 #include "ctjs/parser.h"
 
+#include "ctjs/token_type.h"
+
 using ctjs::ast::BinaryOperator;
 using ctjs::ast::TokenType;
 
@@ -26,7 +28,7 @@ auto to_binary_operator(TokenType type) -> ast::BinaryOperator {
     case TokenType::GreaterThanEquals:
       return BinaryOperator::GreaterThanOrEqual;
     default:
-      throw std::runtime_error("Unknown binary operator");
+      throw std::runtime_error("Unknown binary operator: " + to_token(type));
   }
 }
 
@@ -294,13 +296,17 @@ auto Parser::parse_secondary_expression(ast::Expression lhs)
                                    std::move(lhs), parse_expression());
     case TokenType::Period: {
       auto identifier{parse_identifier()};
-      auto prop{ast::Literal({file_name_, start, start}, Value(identifier->name))};
+      auto end{position()};
+      auto prop{
+          ast::Literal({file_name_, start, end}, Value(identifier->name))};
       return ast::MemberExpression({file_name_, start, start}, std::move(lhs),
                                    prop);
     }
     case TokenType::BracketOpen: {
-      auto expr{ast::MemberExpression({file_name_, start, start},
-                                      std::move(lhs), parse_expression())};
+      auto literal{parse_expression()};
+      auto end{position()};
+      auto expr{ast::MemberExpression({file_name_, start, end}, std::move(lhs),
+                                      literal)};
       consume_token(TokenType::BracketClose);
       return expr;
     }
@@ -313,12 +319,15 @@ auto Parser::parse_secondary_expression(ast::Expression lhs)
         }
       }
       consume_token(TokenType::ParenClose);
-      return ast::CallExpression({file_name_, start, start}, std::move(lhs),
+      auto end{position()};
+      return ast::CallExpression({file_name_, start, end}, std::move(lhs),
                                  arguments);
     }
     case TokenType::Equals: {
-      return ast::AssignmentExpression({file_name_, start, start},
-                                       std::move(lhs), parse_expression());
+      auto expr{parse_expression()};
+      auto end{position()};
+      return ast::AssignmentExpression({file_name_, start, end}, std::move(lhs),
+                                       expr);
     }
     default:
       throw std::runtime_error("Unknown secondary expression");
@@ -326,7 +335,6 @@ auto Parser::parse_secondary_expression(ast::Expression lhs)
 }
 
 auto Parser::parse_primary_expression() -> ast::Expression {
-  auto start{position()};
   auto next{tokenizer_.peek()};
   switch (next.type) {
     default:
@@ -378,7 +386,7 @@ auto Parser::consume_token(TokenType type) -> Token {
     throw std::runtime_error("Expected token of type '" + to_token(type) +
                              "' but found '" + token.value + "' (" +
                              std::to_string(token.line) + ", " +
-                             std::to_string(token.col) + ")");
+                             std::to_string(token.col) + ") " + file_name_);
   }
   return token;
 }

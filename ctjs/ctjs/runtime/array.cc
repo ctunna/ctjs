@@ -21,7 +21,7 @@ auto Array::to_string() const -> std::string {
   std::vector<std::string> strings;
   auto props{properties()};
   std::transform(props.begin(), props.end(), std::back_inserter(strings),
-                 [](auto const& v) { return v.second.to_string(); });
+                 [](auto const& value) { return value.second.to_string(); });
   auto array{ctjs::util::string::join(strings.begin(), strings.end(), ", ")};
   return "[" + array + "]";
 }

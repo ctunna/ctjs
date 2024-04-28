@@ -4,98 +4,115 @@
 
 namespace ctjs {
 template <typename T, typename U>
-concept HasPlusOperator = requires(T a, U b) {
-  { a + b } -> std::convertible_to<T>;
+concept HasPlusOperator = requires(T lhs, U rhs) {
+  { lhs + rhs } -> std::convertible_to<T>;
 };
 
 template <typename T, typename U>
-concept HasMinusOperator = requires(T a, U b) {
-  { a - b } -> std::convertible_to<T>;
+concept HasMinusOperator = requires(T lhs, U rhs) {
+  { lhs - rhs } -> std::convertible_to<T>;
 };
 
 template <typename T, typename U>
-concept HasMultiplyOperator = requires(T a, U b) {
-  { a* b } -> std::convertible_to<T>;
+concept HasMultiplyOperator = requires(T lhs, U rhs) {
+  { lhs* rhs } -> std::convertible_to<T>;
 };
 
 template <typename T, typename U>
-concept HasGreaterThanOperator = requires(T a, U b) {
-  { a > b } -> std::convertible_to<bool>;
+concept HasDivisionOperator = requires(T lhs, U rhs) {
+  { lhs / rhs } -> std::convertible_to<T>;
 };
 
 template <typename T, typename U>
-concept HasEqualsOperator = requires(T a, U b) {
-  { a == b } -> std::convertible_to<bool>;
+concept HasGreaterThanOperator = requires(T lhs, U rhs) {
+  { lhs > rhs } -> std::convertible_to<bool>;
+};
+
+template <typename T, typename U>
+concept HasEqualsOperator = requires(T lhs, U rhs) {
+  { lhs == rhs } -> std::convertible_to<bool>;
 };
 
 struct PlusVisitor {
-  auto operator()(auto const& a, auto const& b) const -> Value {
-    using R = std::decay_t<decltype(a)>;
+  auto operator()(auto const& lhs, auto const& rhs) const -> Value {
+    using R = std::decay_t<decltype(lhs)>;
     auto coerce{Coerce<R>{}};
-    if constexpr (HasPlusOperator<decltype(a), decltype(coerce(b))>) {
-      return Value(a + coerce(b));
+    if constexpr (HasPlusOperator<decltype(lhs), decltype(coerce(rhs))>) {
+      return Value(lhs + coerce(rhs));
     }
-    throw std::runtime_error("Invalid addition");
+    throw std::runtime_error("Invalid lhsddition");
   }
-  auto operator()(auto const& a, std::string const& b) const -> Value {
+  auto operator()(auto const& lhs, std::string const& rhs) const -> Value {
     auto coerce{Coerce<std::string>{}};
-    return Value(coerce(a) + b);
+    return Value(coerce(lhs) + rhs);
   }
 };
 
 struct MinusVisitor {
-  auto operator()(auto const& a, auto const& b) const -> Value {
-    using R = std::decay_t<decltype(a)>;
+  auto operator()(auto const& lhs, auto const& rhs) const -> Value {
+    using R = std::decay_t<decltype(lhs)>;
     auto coerce{Coerce<R>{}};
-    if constexpr (HasMinusOperator<decltype(a), decltype(coerce(b))>) {
-      return Value(a - coerce(b));
+    if constexpr (HasMinusOperator<decltype(lhs), decltype(coerce(rhs))>) {
+      return Value(lhs - coerce(rhs));
     }
     throw std::runtime_error("Invalid subtraction");
   }
 };
 
 struct MultiplyVisitor {
-  auto operator()(auto const& a, auto const& b) const -> Value {
-    using R = std::decay_t<decltype(a)>;
+  auto operator()(auto const& lhs, auto const& rhs) const -> Value {
+    using R = std::decay_t<decltype(lhs)>;
     auto coerce{Coerce<R>{}};
-    if constexpr (HasMultiplyOperator<decltype(a), decltype(coerce(b))>) {
-      return Value(a * coerce(b));
+    if constexpr (HasMultiplyOperator<decltype(lhs), decltype(coerce(rhs))>) {
+      return Value(lhs * coerce(rhs));
+    }
+    throw std::runtime_error("Invalid multiplication");
+  }
+};
+
+struct DivisionVisitor {
+  auto operator()(auto const& lhs, auto const& rhs) const -> Value {
+    using R = std::decay_t<decltype(lhs)>;
+    auto coerce{Coerce<R>{}};
+    if constexpr (HasDivisionOperator<decltype(lhs), decltype(coerce(rhs))>) {
+      return Value(lhs / coerce(rhs));
     }
     throw std::runtime_error("Invalid multiplication");
   }
 };
 
 struct GreaterThanVisitor {
-  auto operator()(auto const& a, auto const& b) const -> bool {
-    using R = std::decay_t<decltype(a)>;
+  auto operator()(auto const& lhs, auto const& rhs) const -> bool {
+    using R = std::decay_t<decltype(lhs)>;
     auto coerce{Coerce<R>{}};
-    if constexpr (HasGreaterThanOperator<decltype(a), decltype(coerce(b))>) {
-      return a > coerce(b);
+    if constexpr (HasGreaterThanOperator<decltype(lhs),
+                                         decltype(coerce(rhs))>) {
+      return lhs > coerce(rhs);
     }
     throw std::runtime_error("Invalid comparison");
   }
 };
 
 struct EqualsVisitor {
-  auto operator()(auto const& a, auto const& b) const -> bool {
-    using R = std::decay_t<decltype(a)>;
+  auto operator()(auto const& lhs, auto const& rhs) const -> bool {
+    using R = std::decay_t<decltype(lhs)>;
     auto coerce{Coerce<R>{}};
-    if constexpr (HasEqualsOperator<decltype(a), decltype(coerce(b))>) {
-      return a == coerce(b);
+    if constexpr (HasEqualsOperator<decltype(lhs), decltype(coerce(rhs))>) {
+      return lhs == coerce(rhs);
     }
     throw std::runtime_error("Invalid comparison");
   }
 };
 
 struct IndexVisitor {
-  auto operator()(std::shared_ptr<Object>& a, std::string const& b) const
+  auto operator()(std::shared_ptr<Object>& lhs, std::string const& rhs) const
       -> Value {
-    return a->get_property(b);
+    return lhs->get_property(rhs);
   }
-  auto operator()(std::shared_ptr<Object>& a, int const& b) const -> Value {
-    return a->get_property(std::to_string(b));
+  auto operator()(std::shared_ptr<Object>& lhs, int const& rhs) const -> Value {
+    return lhs->get_property(std::to_string(rhs));
   }
-  auto operator()([[maybe_unused]] auto& a, [[maybe_unused]] auto& b) const
+  auto operator()([[maybe_unused]] auto& lhs, [[maybe_unused]] auto& rhs) const
       -> Value {
     throw std::runtime_error("Invalid index operation");
   }
@@ -144,6 +161,11 @@ auto Value::operator-(Value const& other) const -> Value {
 
 auto Value::operator*(Value const& other) const -> Value {
   static auto visitor{MultiplyVisitor{}};
+  return std::visit(visitor, value_, other.value_);
+}
+
+auto Value::operator/(Value const& other) const -> Value {
+  static auto visitor{DivisionVisitor{}};
   return std::visit(visitor, value_, other.value_);
 }
 

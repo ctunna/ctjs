@@ -35,11 +35,11 @@ void PrintVisitor::operator()(
   std::cout << "\n" << std::string(indent_, ' ') << ")";
 }
 
-void PrintVisitor::operator()(util::Box<ast::VariableDeclaration>& decl) const {
+void PrintVisitor::operator()(util::Box<ast::VariableDeclaration>& declaration) const {
   std::cout << std::string(indent_, ' ') << "VariableDeclaration([";
-  for (auto& d : decl->declarations) {
+  for (auto& decl : declaration->declarations) {
     std::cout << "\n";
-    std::visit(PrintVisitor{indent_ + 2}, d);
+    std::visit(PrintVisitor{indent_ + 2}, decl);
     std::cout << "\n";
   }
   std::cout << std::string(indent_, ' ') << "])";
@@ -179,13 +179,13 @@ void PrintVisitor::operator()(
   std::cout << std::string(indent_, ' ') << "])";
 }
 
-void PrintVisitor::operator()(util::Box<ast::FunctionExpression>& decl) const {
+void PrintVisitor::operator()(util::Box<ast::FunctionExpression>& expression) const {
   std::cout << std::string(indent_, ' ') << "FunctionExpression(\n";
-  for (auto& param : decl->params) {
+  for (auto& param : expression->params) {
     std::visit(PrintVisitor{indent_ + 2}, param);
     std::cout << "\n";
   }
-  std::visit(PrintVisitor{indent_ + 2}, decl->body);
+  std::visit(PrintVisitor{indent_ + 2}, expression->body);
   std::cout << "\n" << std::string(indent_, ' ') << ")";
 }
 

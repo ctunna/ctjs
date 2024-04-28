@@ -9,11 +9,11 @@
 
 namespace ctjs {
 auto Object::get_property(const std::string_view name) -> Value {
-  auto it = properties_.find(std::string(name));
-  if (it == properties_.end()) {
+  auto iter = properties_.find(std::string(name));
+  if (iter == properties_.end()) {
     return {};
   }
-  return it->second;
+  return iter->second;
 }
 
 void Object::set_property(const std::string_view name, Value value) {

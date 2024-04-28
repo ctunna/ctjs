@@ -19,6 +19,7 @@ class Value {
   auto operator+(Value const& other) const -> Value;
   auto operator-(Value const& other) const -> Value;
   auto operator*(Value const& other) const -> Value;
+  auto operator/(Value const& other) const -> Value;
   auto operator>(Value const& other) const -> bool;
   auto operator<(Value const& other) const -> bool;
   auto operator==(Value const& other) const -> bool;

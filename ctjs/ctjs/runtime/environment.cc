@@ -33,7 +33,7 @@ void Environment::set(std::string const& name, Value value) {
 
 void Environment::print() {
   for (auto const& [name, value] : scope_) {
-    std::cout << name << " = " << value.to_string() << std::endl;
+    std::cout << name << " = " << value.to_string() << '\n';
   }
 }
 }  // namespace ctjs

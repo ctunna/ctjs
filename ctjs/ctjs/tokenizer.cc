@@ -25,7 +25,8 @@ static std::unordered_map<std::string, TokenType> const one_char_tokens{
     {";", TokenType::Semicolon},    {"=", TokenType::Equals},
     {"+", TokenType::Plus},         {">", TokenType::GreaterThan},
     {"<", TokenType::LessThan},     {"!", TokenType::ExclamationMark},
-    {"?", TokenType::QuestionMark}, {":", TokenType::Colon}};
+    {"?", TokenType::QuestionMark}, {":", TokenType::Colon},
+    {"/", TokenType::Slash}};
 static std::unordered_map<std::string, TokenType> const keyword_tokens{
     {"var", TokenType::Var},         {"let", TokenType::Let},
     {"const", TokenType::Const},     {"if", TokenType::If},
@@ -70,9 +71,9 @@ auto Tokenizer::next() -> Token {
   }
 
   for (const auto &[token, token_type] : keyword_tokens) {
-    std::regex re{token + "[^\\w]"};
+    std::regex regex{token + "[^\\w]"};
     std::string str{source_.substr(state_.position, token.size() + 1)};
-    if (std::regex_match(str, re) ||
+    if (std::regex_match(str, regex) ||
         (str == token && state_.position + token.size() == source_.size())) {
       state_.position += token.size();
       return {token_type, token, state_.line,
@@ -159,7 +160,6 @@ auto Tokenizer::consume_identifier() -> std::string {
 auto Tokenizer::consume_line_comment() -> void {
   while (is_line_comment()) {
     state_.position += 2;
-    // TODO: Handle CRLF
     while (!is_char('\n')) {
       state_.position++;
     }

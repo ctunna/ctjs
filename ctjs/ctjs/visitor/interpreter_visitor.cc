@@ -127,6 +127,8 @@ auto InterpreterVisitor::operator()(
       return left - right;
     case ast::BinaryOperator::Mul:
       return left * right;
+    case ast::BinaryOperator::Div:
+      return left / right;
     case ast::BinaryOperator::Equal:
       return Value(left == right);
     case ast::BinaryOperator::GreaterThan:
@@ -154,7 +156,8 @@ auto InterpreterVisitor::operator()(util::Box<ast::CallExpression>& expression)
   }
 }
 
-auto InterpreterVisitor::operator()(util::Box<ast::Identifier>& identifier) -> Value {
+auto InterpreterVisitor::operator()(util::Box<ast::Identifier>& identifier)
+    -> Value {
   return environment_->get(identifier->name);
 }
 
