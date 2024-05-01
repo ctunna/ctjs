@@ -18,36 +18,22 @@ class Tokenizer {
   auto operator=(Tokenizer &&) -> Tokenizer & = delete;
 
   auto ready() -> bool;
-
   auto consume_all() -> std::vector<Token>;
-
   auto peek() -> Token;
-
   auto next() -> Token;
-
   [[nodiscard]] auto line() const -> size_t;
-
   [[nodiscard]] auto column() const -> size_t;
 
  private:
   auto consume_string_literal() -> std::string;
-
   auto consume_numeric_literal() -> std::string;
-
   auto consume_identifier() -> std::string;
-
   auto consume_line_comment() -> void;
-
   auto is_identifier_char() -> bool;
-
   auto is_alpha() -> bool;
-
   auto is_digit() -> bool;
-
   auto is_char(char character) -> bool;
-
   auto is_whitespace() -> bool;
-
   auto is_line_comment() -> bool;
 
   struct State {

@@ -1,6 +1,7 @@
 #include "ctjs/runtime/object.h"
 
 #include <algorithm>
+#include <functional>
 #include <string>
 #include <vector>
 
@@ -9,7 +10,7 @@
 
 namespace ctjs {
 auto Object::get_property(const std::string_view name) -> Value {
-  auto iter = properties_.find(std::string(name));
+  auto iter = properties_.find(name);
   if (iter == properties_.end()) {
     return {};
   }
@@ -25,10 +26,11 @@ auto Object::operator[](const std::string_view name) -> Value& {
 }
 
 auto Object::has_property(const std::string_view name) const -> bool {
-  return properties_.find(std::string(name)) != properties_.end();
+  return properties_.find(name) != properties_.end();
 }
 
-auto Object::properties() const -> std::map<std::string, Value> const& {
+auto Object::properties() const
+    -> std::map<std::string, Value, std::less<>> const& {
   return properties_;
 }
 

@@ -120,7 +120,7 @@ struct IndexVisitor {
 
 struct IterableVisitor {
   auto operator()(std::shared_ptr<Object>& value) const
-      -> std::map<std::string, Value> {
+      -> std::map<std::string, Value, std::less<>> {
     return value->properties();
   }
   auto operator()([[maybe_unused]] auto& value) const
