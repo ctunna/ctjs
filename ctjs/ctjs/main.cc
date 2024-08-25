@@ -10,7 +10,7 @@
 
 auto main(int argc, char** argv) -> int {
   try {
-    auto flag{std::string(argv[1])};
+    auto flag{argc < 2 ? "-h" : std::string(argv[1])};
     if (flag == "-h") {
       std::cout << "Usage:\n"
                 << argv[0] << " [option] <argument>\n\n"
